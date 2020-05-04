@@ -4,7 +4,7 @@
 
 ***
 # Latest Analysis
-* [How Effective Is Social Distancing?](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/analysis/See19%20-%20How%20Effective%20Is%20Social%20Distancing%3F.ipynb?flush_cache=True)
+* [How Effective Is Social Distancing?](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/analysis/See19%20-%20How%20Effective%20Is%20Social%20Distancing%3F.ipynb?flush_cache=false)
 * [What Factors Are Really Impacting C19 Virulence?]()
 
 ***
@@ -163,8 +163,3 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 
 ![png](README_files/README_13_0.png)
 
-
-
-```python
-dd
-```
