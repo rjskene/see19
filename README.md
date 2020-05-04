@@ -92,7 +92,7 @@ output_notebook()
 
 <div class="bk-root">
     <a href="https://bokeh.org" target="_blank" class="bk-logo bk-logo-small bk-logo-notebook"></a>
-    <span id="1001">Loading BokehJS ...</span>
+    <span id="1098">Loading BokehJS ...</span>
 </div>
 
 
@@ -114,6 +114,19 @@ p = casestudy.comp_chart.make(comp_type='multiline', label_offsets=label_offsets
 
 show(p)
 ```
+
+
+
+
+
+
+
+
+<div class="bk-root" id="2cb9eebd-d32e-4a12-9471-f8c7f7499755" data-root-id="1100"></div>
+
+
+
+
 
 ![Bokeh](README_files/bokeh.png)
 
@@ -145,3 +158,7 @@ kwargs = {
 }
 p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
+
+
+![png](README_files/README_13_0.png)
+
