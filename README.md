@@ -4,14 +4,14 @@
 
 ***
 # Latest Analysis
-* [How Effective Is Social Distancing?](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/analysis/See19%20-%20How%20Effective%20Is%20Social%20Distancing%3F.ipynb?flush_cache=true)
+* [How Effective Is Social Distancing?](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/analysis/See19%20-%20How%20Effective%20Is%20Social%20Distancing%3F.ipynb?flush_cache=True)
 * [What Factors Are Really Impacting C19 Virulence?]()
 
 ***
 # The Dataset
 The dataset is in `csv` format and can be found [here](https://github.com/ryanskene/see19/tree/master/dataset)
 
-You can find relevant statistics and detailed sourcing in the **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=true)**
+You can find relevant statistics and detailed sourcing in the **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=True)**
 
 # The Package
 
@@ -22,7 +22,7 @@ the `see19` package is available on [pypi](https://pypi.org/project/see19/) and 
 The package provides a helpful `pandas`-based interface for working with the dataset. It also provides several visualization tools 
 
 # The Guide
-The **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=true)** details data sources, structure, functionality, and visualization tools.
+The **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=True)** details data sources, structure, functionality, and visualization tools.
 
 ***
 # Purpose
