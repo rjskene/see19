@@ -158,7 +158,7 @@ class CompChart2D(BaseChart):
             palette_base=Viridis256, palette_flip=False, palette_shift=0,
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
-            width=1000, height=500, base_inc=.25, 
+            width=750, height=500, base_inc=.25, 
             save_file=False, filename=None,
         ):
         self.df_comp = self.df[self.df[comp_category].notna()].copy(deep=True)

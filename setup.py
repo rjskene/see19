@@ -13,10 +13,10 @@ requires = [
 
 setuptools.setup(
     name='see19',
-    version='0.1.2',
+    version='0.1.4',
     author='Ryan Skene',
     author_email='rjskene83@gmail.com',
-    description='An interface for the visualizing and analysing the See19 dataset',
+    description='An interface for the visualizing and analysing the see19 dataset',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/ryanskene/see19',
