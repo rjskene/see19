@@ -44,7 +44,8 @@ class BaseChart:
             'deaths_new_dma_per_1M_lognat':  'Daily Deaths per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'deaths_new_dma_per_person_per_land_KM2': 'Daily Deaths / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'deaths_new_dma_per_person_per_city_KM2': 'Daily Deaths / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'deaths_new_dma_per_person_per_city_KM2_lognat':  'Daily Deaths / Person / Land KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
+            'deaths_new_dma_per_person_per_land_KM2_lognat': 'Daily Deaths / Person / Land KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
+            'deaths_new_dma_per_person_per_city_KM2_lognat': 'Daily Deaths / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'deaths_per_person_per_land_KM2': 'Total Deaths / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'deaths_per_person_per_city_KM2': 'Total Deaths / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_1M': 'Daily Cases per 1M ({}DMA)'.format(self.count_dma),
@@ -155,7 +156,8 @@ class CompChart2D(BaseChart):
             self, comp_category='deaths_new_dma_per_1M', regions=None,
             comp_type='vbar', overlay=None,  
             label_offsets={}, title=None, 
-            palette_base=Viridis256, palette_flip=False, palette_shift=0,
+            palette_base=Viridis256, palette_flip=False, palette_shift=0, 
+            multiline_labels=True,
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
             width=750, height=500, base_inc=.25, 
@@ -214,26 +216,27 @@ class CompChart2D(BaseChart):
             p.multi_line(xs='x', ys='y', line_color='color', line_width=5, source=source_ml)
 
             # Setup labels for each line
-            for i in range(len(ml_data['x'])):
-                x_label = int(ml_data['x'][i][-1])
-                y_label = ml_data['y'][i][-1]
-                x_offset = -20
-                y_offset = 5
-                label_region = ml_data['regions'][i]
+            if multiline_labels:
+                for i in range(len(ml_data['x'])):
+                    x_label = int(ml_data['x'][i][-1])
+                    y_label = ml_data['y'][i][-1]
+                    x_offset = -20
+                    y_offset = 5
+                    label_region = ml_data['regions'][i]
 
-                if label_region in label_offsets.keys():
-                    x_offset += label_offsets[label_region]['x_offset']
-                    y_offset += label_offsets[label_region]['y_offset']
-                
-                label = Label(
-                    x=x_label, y=y_label, 
-                    x_offset=x_offset, y_offset=y_offset,
-                    text_font_size='8pt', text_color=palette[i], text_alpha=.6,
-                    text=label_region,
-                    render_mode='canvas'
-                )
+                    if label_region in label_offsets.keys():
+                        x_offset += label_offsets[label_region]['x_offset']
+                        y_offset += label_offsets[label_region]['y_offset']
+                    
+                    label = Label(
+                        x=x_label, y=y_label, 
+                        x_offset=x_offset, y_offset=y_offset,
+                        text_font_size='8pt', text_color=palette[i], text_alpha=.6,
+                        text=label_region,
+                        render_mode='canvas'
+                    )
 
-                p.add_layout(label)
+                    p.add_layout(label)
 
         if comp_type == 'vbar':
             vbar_data = self._vbar_source()
