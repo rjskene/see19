@@ -129,7 +129,7 @@ show(p)
 
 
 
-[Bokeh](README_files/bokeh.png)
+![Bokeh](README_files/bokeh.png)
 
 
 ```python
