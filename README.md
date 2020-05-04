@@ -4,14 +4,13 @@
 
 ***
 # Latest Analysis
-* [How Effective Is Social Distancing?](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/analysis/See19%20-%20How%20Effective%20Is%20Social%20Distancing%3F.ipynb?flush_cache=false)
-* [What Factors Are Really Impacting C19 Virulence?]()
+[How Effective Is Social Distancing?](https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html)
 
 ***
 # The Dataset
 The dataset is in `csv` format and can be found [here](https://github.com/ryanskene/see19/tree/master/dataset)
 
-You can find relevant statistics and detailed sourcing in the **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=True)**
+You can find relevant statistics and detailed sourcing in the **[Guide](https://ryanskene.github.io/see19/)**
 
 # The Package
 
@@ -22,7 +21,7 @@ the `see19` package is available on [pypi](https://pypi.org/project/see19/) and 
 The package provides a helpful `pandas`-based interface for working with the dataset. It also provides several visualization tools 
 
 # The Guide
-The **[Guide](https://nbviewer.jupyter.org/github/ryanskene/see19/blob/master/notebooks/guide/See19%20Guide.ipynb?flush_cache=True)** details data sources, structure, functionality, and visualization tools.
+The **[Guide](https://ryanskene.github.io/see19/)** details data sources, structure, functionality, and visualization tools.
 
 ***
 # Purpose
@@ -93,7 +92,7 @@ output_notebook()
 
 <div class="bk-root">
     <a href="https://bokeh.org" target="_blank" class="bk-logo bk-logo-small bk-logo-notebook"></a>
-    <span id="1404">Loading BokehJS ...</span>
+    <span id="1001">Loading BokehJS ...</span>
 </div>
 
 
@@ -115,19 +114,6 @@ p = casestudy.comp_chart.make(comp_type='multiline', label_offsets=label_offsets
 
 show(p)
 ```
-
-
-
-
-
-
-
-
-<div class="bk-root" id="dc01e4ce-a2b9-4a05-9d06-33410b94e00f" data-root-id="1406"></div>
-
-
-
-
 
 ![Bokeh](README_files/bokeh.png)
 
@@ -159,7 +145,3 @@ kwargs = {
 }
 p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
-
-
-![png](README_files/README_13_0.png)
-
