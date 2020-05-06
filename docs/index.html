@@ -13087,9 +13087,7 @@ div#notebook {
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Analysis">Analysis<a class="anchor-link" href="#Analysis">&#182;</a></h1><p>Please read my various deep dives with see19 exploring different aspects of COVID19.</p>
-<ul>
-<li><a href="https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html">How Effective Is Social Distancing?</a></li>
-</ul>
+<p><a href="https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html">How Effective Is Social Distancing?</a></p>
 
 </div>
 </div>
@@ -13271,7 +13269,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">see19</span> <span class="kn">import</span> <span class="n">get_baseframe</span>
@@ -13294,7 +13292,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -13310,7 +13308,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[2]:</div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
 
@@ -13449,15 +13447,43 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are the following number of unique regions in the dataset:</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_regs</span> <span class="o">=</span> <span class="n">baseframe</span><span class="o">.</span><span class="n">region_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">region_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>311</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13465,7 +13491,6 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>There are <strong>{{num_regs}}</strong> unique regions in the dataset</p>
 <p>Australia, Brazil, Canada, China, Italy, and the US have state/provincial level data.</p>
 <p>For example, regions within Italy and Brazil are as follows:</p>
 
@@ -13474,7 +13499,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="p">[</span><span class="n">baseframe</span><span class="o">.</span><span class="n">country</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;Italy&#39;</span><span class="p">,</span> <span class="s1">&#39;Brazil&#39;</span><span class="p">])]</span><span class="o">.</span><span class="n">region_name</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
@@ -13490,7 +13515,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[4]:</div>
+    <div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -13515,16 +13540,43 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Each region has the following number of dates in the dataset:</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_dates</span> <span class="o">=</span> <span class="n">baseframe</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span>
-<span class="n">rows</span> <span class="o">=</span> <span class="n">baseframe</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>127</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13532,21 +13584,40 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Each region has up to <strong>{{num_dates}}</strong> dates in the dataset.</p>
-<p>Thus there are <strong>{{rows}}</strong> rows in the dataset, with one row for each unique <code>region_id</code>-<code>date</code> combination.</p>
+<p>Thus there are the following number of rows in the dataset, with one row for each unique <code>region_id</code>-<code>date</code> combination:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_cols</span> <span class="o">=</span> <span class="n">baseframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">size</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>38806</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13554,7 +13625,47 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>There are currently <strong>{{num_cols}}</strong> columns in the dataset, most of which are observable factors.</p>
+<p>There are currently the following number of columns in the dataset, most of which are observable factors.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">size</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>127</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>The factors can be seen as split between two types:</p>
 <ul>
 <li><p><strong>Time-static</strong> factors, i.e. do not change by the date.</p>
@@ -13575,7 +13686,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ny</span> <span class="o">=</span> <span class="n">baseframe</span><span class="p">[</span><span class="n">baseframe</span><span class="o">.</span><span class="n">region_name</span> <span class="o">==</span> <span class="s1">&#39;New York&#39;</span><span class="p">]</span>
@@ -13594,26 +13705,46 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The entire set has the following number of different data points:</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">size</span> <span class="o">=</span> <span class="n">baseframe</span><span class="o">.</span><span class="n">size</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">baseframe</span><span class="o">.</span><span class="n">size</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>4928362</pre>
 </div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The entire set has <strong>{{size}}</strong> different data points</p>
+
+</div>
 
 </div>
 </div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13629,7 +13760,7 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">see19</span> <span class="kn">import</span> <span class="n">agg_to_country_level</span>
@@ -13643,13 +13774,125 @@ The See19 dataset aggregates global data on COVID19 fatalities in various region
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">country_base</span><span class="p">[</span><span class="n">country_base</span><span class="o">.</span><span class="n">region_name</span> <span class="o">==</span> <span class="s1">&#39;USA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>region_id</th>
+      <th>country_id</th>
+      <th>region_name</th>
+      <th>country_code</th>
+      <th>country</th>
+      <th>date</th>
+      <th>cases</th>
+      <th>deaths</th>
+      <th>population</th>
+      <th>land_KM2</th>
+      <th>...</th>
+      <th>genito</th>
+      <th>childbirth</th>
+      <th>perinatal</th>
+      <th>congenital</th>
+      <th>other</th>
+      <th>external</th>
+      <th>visitors</th>
+      <th>travel_year</th>
+      <th>gdp</th>
+      <th>gdp_year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>reg_for_USA</td>
+      <td>236</td>
+      <td>USA</td>
+      <td>USA</td>
+      <td>United States of America (the)</td>
+      <td>2020-01-01 00:00:00+00:00</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>6.053834e+06</td>
+      <td>9.090182e+06</td>
+      <td>...</td>
+      <td>68647.0</td>
+      <td>181.0</td>
+      <td>6481.0</td>
+      <td>3985.0</td>
+      <td>29419.0</td>
+      <td>14062</td>
+      <td>102108383.0</td>
+      <td>2017.0</td>
+      <td>1.860210e+13</td>
+      <td>2016.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>reg_for_USA</td>
+      <td>236</td>
+      <td>USA</td>
+      <td>USA</td>
+      <td>United States of America (the)</td>
+      <td>2020-01-02 00:00:00+00:00</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>6.053834e+06</td>
+      <td>9.090182e+06</td>
+      <td>...</td>
+      <td>68647.0</td>
+      <td>181.0</td>
+      <td>6481.0</td>
+      <td>3985.0</td>
+      <td>29419.0</td>
+      <td>14062</td>
+      <td>102108383.0</td>
+      <td>2017.0</td>
+      <td>1.860210e+13</td>
+      <td>2016.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 100 columns</p>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
