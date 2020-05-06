@@ -37,8 +37,8 @@ class BaseChart:
         self.degrees = '\xb0' if self.temp_scale in ['C', 'F'] else ''
             
         self.labels = {
-            'max_days' : 'Days Since {} Death{} Until Max Fatality Rate'.format(self.start_hurdle, 's' if self.start_hurdle > 1 else ''),
-            self.start_factor : 'Days Since {} {}{}'.format(self.start_hurdle, 'Case' if 'case' in self.start_factor else 'Death', 's' if self.start_hurdle > 1 else ''),
+            '': '',
+            'deaths': 'Cumulative Deaths',
             'deaths_new_dma_per_1M': 'Daily Deaths per 1M ({}DMA)'.format(self.count_dma),
             'deaths_per_1M': 'Cumulative Deaths per 1M',
             'deaths_new_dma_per_1M_lognat':  'Daily Deaths per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
@@ -48,6 +48,7 @@ class BaseChart:
             'deaths_new_dma_per_person_per_city_KM2_lognat': 'Daily Deaths / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'deaths_per_person_per_land_KM2': 'Total Deaths / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'deaths_per_person_per_city_KM2': 'Total Deaths / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
+            'cases': 'Cumulative Cases',
             'cases_new_dma_per_1M': 'Daily Cases per 1M ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_1M_lognat': 'Daily Cases per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'cases_new_dma_per_person_per_city_KM2': 'Total Cases / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
@@ -89,6 +90,12 @@ class BaseChart:
             'other': 'Other Fatalities',
             'external': 'External Fatalities'
         } 
+        self.labels = {
+            self.start_factor : 'Days Since {} {}'.format(self.start_hurdle, self.labels[self.start_factor]),
+            'days_to_max_' + self.start_factor : 'Days Since {} {} Until Max Fatality Rate'.format(self.start_hurdle, self.labels[self.start_factor]),
+            **self.labels
+        }
+        
         if self._casestudy.age_ranges:
             self.labels ={**self.labels, **{age_range + '_%': self._age_range_label_maker(age_range) for age_range in self._casestudy.age_ranges}}
         if self._casestudy.factor_dmas:
@@ -639,7 +646,7 @@ class HeatMap(BaseChart):
             map_dict['region_name'] = df_group['region_name'].iloc[0]
             map_dict[comp_category] = df_group[comp_category].max()
 
-            if self.comp_factor == 'max_days':
+            if self.comp_factor == 'days_to_max':
                 max_idx = df_group[comp_category].argmax()
                 map_dict[self.comp_factor] = df_group.iloc[max_idx].days.days
             else:
@@ -665,6 +672,7 @@ class HeatMap(BaseChart):
             fs_xlabel=24, fs_ylabel=24, fs_clabel=16,
             annotations=[], hlines=[],
             palette_base='coolwarm', hexsize=27, bins=None,
+            rects=[],
             width=16, height=12, save_file=False, filename=''
         ):
         factor_starts = ['start_hurdle', 'max']
@@ -706,7 +714,8 @@ class HeatMap(BaseChart):
             for y_hline in hlines:
                 hl = ax.axhline(y=y_hline, color='black', linestyle='dashed', alpha=.3)
 
-        ax.set_xlabel(self.labels[self.comp_factor], fontsize=fs_xlabel, labelpad=10)
+        xlabel = 'days_to_max_' + self.start_factor if self.comp_factor == 'days_to_max' else self.comp_factor    
+        ax.set_xlabel(self.labels[xlabel], fontsize=fs_xlabel, labelpad=10)
 
         ax.tick_params(axis='y', labelsize=fs_yticks, which='major', pad=0)
         ylabel = 'Maximum ' + self.labels[comp_category]
@@ -718,7 +727,7 @@ class HeatMap(BaseChart):
             
             cax = inset_axes(ax,
                 width='3%',
-                height='50%',
+                height='33%',
                 loc='lower left',
                 bbox_to_anchor=(1.03, 0., .3, 1),
                 bbox_transform=ax.transAxes,
@@ -735,6 +744,11 @@ class HeatMap(BaseChart):
 
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
+
+        if rects:
+            for rect in rects:
+                rect_patch = plt.Rectangle(*rect['rect_args'], **rect['rect_kwargs'])
+                ax.add_patch(rect_patch)
 
         if save_file:
             plt.savefig(filename, bbox_inches='tight')
