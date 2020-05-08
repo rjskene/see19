@@ -6,6 +6,8 @@
 # Latest Analysis
 [How Effective Is Social Distancing?](https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html)
 
+[What Factors Are Correlated With COVID19 Fatality Rates?](https://ryanskene.github.io/see19/analysis/What%20Factors%20Are%20Correlated%20With%20COVID19%20Fatality%20Rates%3F.html)
+
 ***
 # The Dataset
 The dataset is in `csv` format and can be found [here](https://github.com/ryanskene/see19/tree/master/dataset)
@@ -160,5 +162,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](README_files/README_13_0.png)
+![png](output_13_0.png)
 

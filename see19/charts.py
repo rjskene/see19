@@ -1,11 +1,12 @@
 import math
+import operator
 import numpy as np
 import pandas as pd
 
 from bokeh.plotting import figure, output_file, ColumnDataSource
 from bokeh.palettes import Category20, Viridis256
 from bokeh.transform import dodge, linear_cmap
-from bokeh.models import HoverTool, Label, LinearAxis, Range1d
+from bokeh.models import HoverTool, Label, LinearAxis, Range1d, Arrow, NormalHead, OpenHead, VeeHead
 from bokeh.io import export_png
 
 import matplotlib.pyplot as plt
@@ -49,10 +50,12 @@ class BaseChart:
             'deaths_per_person_per_land_KM2': 'Total Deaths / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'deaths_per_person_per_city_KM2': 'Total Deaths / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases': 'Cumulative Cases',
+            'cases_per_1M': 'Cumulative Cases per 1M',
+            'cases_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2',
             'cases_new_dma_per_1M': 'Daily Cases per 1M ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_1M_lognat': 'Daily Cases per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'cases_new_dma_per_person_per_city_KM2': 'Total Cases / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'cases_new_dma_per_person_per_land_KM2': 'Total Cases / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
+            'cases_new_dma_per_person_per_city_KM2': 'Daily Cases / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
+            'cases_new_dma_per_person_per_land_KM2': 'Daily Cases / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'temp': 'Temperature ({}{})'.format(self.degrees, self.temp_scale),
             'dewpoint': 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale),
@@ -63,8 +66,9 @@ class BaseChart:
             'visitors_%': 'Annual Visitors as % of Population',
             'gdp': 'Gross Domestic Product',
             'gdp_%': 'Gross Domestic Product per Capita',
+            'retail_n_rec': 'Change in Retail n Recreation Mobility',
             'transit': 'Change in Transit Mobility',
-            'workplaces': 'Change in Transit Mobility',
+            'workplaces': 'Change in WorkPlace Mobility',
             'c1': 'School Closing', 'c2': 'Workplace Closing', 'c3': 'Cancel Public Events',
             'c4': 'Restrictions on Gatherings', 'c5': 'Close Public Transport', 'c6': 'Stay-at-Home Requirements',
             'c7': 'Restrictions on Internal Movement', 'c8': 'International Travel Controls',
@@ -91,7 +95,7 @@ class BaseChart:
             'external': 'External Fatalities'
         } 
         self.labels = {
-            self.start_factor : 'Days Since {} {}'.format(self.start_hurdle, self.labels[self.start_factor]),
+            'days_' + self.start_factor : 'Days Since {} {}'.format(self.start_hurdle, self.labels[self.start_factor]),
             'days_to_max_' + self.start_factor : 'Days Since {} {} Until Max Fatality Rate'.format(self.start_hurdle, self.labels[self.start_factor]),
             **self.labels
         }
@@ -100,6 +104,9 @@ class BaseChart:
             self.labels ={**self.labels, **{age_range + '_%': self._age_range_label_maker(age_range) for age_range in self._casestudy.age_ranges}}
         if self._casestudy.factor_dmas:
             for factor, dma in self._casestudy.factor_dmas.items():
+                self.labels[factor + '_dma'] = self.labels[factor] + ' {}DMA'.format(dma)
+        if self._casestudy.mobi_dmas:
+            for factor, dma in self._casestudy.mobi_dmas.items():
                 self.labels[factor + '_dma'] = self.labels[factor] + ' {}DMA'.format(dma)
         if self._casestudy.causes:
             self.labels = {**self.labels, **{cause + '_%': self._cause_of_death_label_maker(cause) for cause in self._casestudy.causes}}
@@ -161,10 +168,9 @@ class CompChart2D(BaseChart):
     
     def make(
             self, comp_category='deaths_new_dma_per_1M', regions=None,
-            comp_type='vbar', overlay=None,  
-            label_offsets={}, title=None, 
+            comp_type='vbar', overlay=None, title=None, 
             palette_base=Viridis256, palette_flip=False, palette_shift=0, 
-            multiline_labels=True,
+            multiline_labels=True, label_offsets={}, fs_labels='8pt', 
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
             width=750, height=500, base_inc=.25, 
@@ -179,7 +185,7 @@ class CompChart2D(BaseChart):
             self.df_comp = self.df_comp[self.df_comp['region_name'].isin(regions)]
         else:
             regions = list(self.regions)
-
+        
         # Setup additional class attributes
         self.comp_category = comp_category
         self.comp_type = comp_type
@@ -193,8 +199,8 @@ class CompChart2D(BaseChart):
         min_y = self.df_comp[comp_category].min()
         max_y = self.df_comp[comp_category].max()
         max_y += max_y * .05
-        title = 'Comparison of Daily Fatalities as of {}'.format(last_date) if not title else title
-
+        # title = 'Comparison of Daily Fatalities as of {}'.format(last_date) if not title else title
+        title = ''
         p = figure(
             y_range=Range1d(start=min_y, end=max_y),
             plot_height=height, plot_width=width,
@@ -234,11 +240,11 @@ class CompChart2D(BaseChart):
                     if label_region in label_offsets.keys():
                         x_offset += label_offsets[label_region]['x_offset']
                         y_offset += label_offsets[label_region]['y_offset']
-                    
+                
                     label = Label(
                         x=x_label, y=y_label, 
                         x_offset=x_offset, y_offset=y_offset,
-                        text_font_size='8pt', text_color=palette[i], text_alpha=.6,
+                        text_font_size=fs_labels, text_color=palette[i], text_alpha=.6,
                         text=label_region,
                         render_mode='canvas'
                     )
@@ -264,7 +270,7 @@ class CompChart2D(BaseChart):
             p.legend.location = legend_location
             p.legend.border_line_color = 'black'
 
-        p.xaxis.axis_label = self.labels[self.start_factor]
+        p.xaxis.axis_label = self.labels['days_' + self.start_factor]
         p.xaxis.axis_label_text_font_size = str(x_fontsize) + 'pt'
 
         p.yaxis.axis_label = self.labels[comp_category]
@@ -663,18 +669,47 @@ class HeatMap(BaseChart):
         df_hm = df_hm.sort_values(by=self.comp_factor, ascending=False)
 
         return df_hm
-    
+
+    def box_stats(self, date, dirxn, xbox, ybox, factor_in_the_box='', inverse=False):
+        if dirxn == 'greater':
+            comp = operator.lt if inverse else operator.gt
+            box_params = (comp(self.df_hm[self.comp_factor], xbox) & \
+                (self.df_hm[self.comp_category] > ybox)
+            )
+        elif dirxn == 'lesser':
+            comp = operator.ge if inverse else operator.le
+            box_params = (comp(self.df_hm[self.comp_factor], xbox) & \
+                (self.df_hm[self.comp_category] <= ybox)
+            )
+            
+        df_box = self.df_hm[box_params]
+ 
+        total_deaths = self._casestudy.total_deaths(date)
+        box_deaths = self._casestudy.total_deaths(date, df_box.region_name.tolist())
+        kwargs = {
+            'df': df_box,
+            'num_regs': df_box.shape[0],
+            'all_deaths': box_deaths / total_deaths,
+            self.labels[self.comp_factor]: df_box[self.comp_factor].mean(),            
+        }
+        if factor_in_the_box == 'comp_category':
+            kwargs[self.labels[self.comp_category]] = df_box[self.comp_category].mean()
+        if factor_in_the_box == 'color_factor':
+            kwargs[self.labels[self.color_factor]] = df_box[self.color_factor].mean()
+        return kwargs
+
     def make(self,
-            comp_category='deaths', rank_category=None, comp_size=None,
-            regions=[], comp_factor='population', color_factor='', 
-            comp_factor_start='start_hurdle', color_factor_start='start_hurdle',
-            fs_xticks=12, fs_yticks=12,
-            fs_xlabel=24, fs_ylabel=24, fs_clabel=16,
-            annotations=[], hlines=[],
-            palette_base='coolwarm', hexsize=27, bins=None,
-            rects=[],
-            width=16, height=12, save_file=False, filename=''
-        ):
+        comp_category='deaths', rank_category=None, comp_size=None,
+        regions=[], comp_factor='population', color_factor='', 
+        comp_factor_start='start_hurdle', color_factor_start='start_hurdle',
+        fs_xticks=12, fs_yticks=12,
+        fs_xlabel=24, fs_ylabel=24, fs_clabel=16,
+        pad_xlabel=20, pad_ylabel=12,
+        annotations=[], hlines=[], hline_alpha=.1,
+        palette_base='coolwarm', hexsize=27, bins=None,
+        rects=[],
+        width=16, height=12, save_file=False, filename=''
+    ):
         factor_starts = ['start_hurdle', 'max']
         if comp_factor_start not in factor_starts or color_factor_start not in factor_starts:
             raise AttributeError("""
@@ -712,14 +747,15 @@ class HeatMap(BaseChart):
 
         if hlines:
             for y_hline in hlines:
-                hl = ax.axhline(y=y_hline, color='black', linestyle='dashed', alpha=.3)
+                hl = ax.axhline(y=y_hline, color='gray', linestyle='dashed', alpha=hline_alpha)
 
+        ax.tick_params(axis='x', labelsize=fs_xticks, which='major', pad=4)
         xlabel = 'days_to_max_' + self.start_factor if self.comp_factor == 'days_to_max' else self.comp_factor    
-        ax.set_xlabel(self.labels[xlabel], fontsize=fs_xlabel, labelpad=10)
+        ax.set_xlabel(self.labels[xlabel], fontsize=fs_xlabel, labelpad=pad_xlabel)
 
-        ax.tick_params(axis='y', labelsize=fs_yticks, which='major', pad=0)
-        ylabel = 'Maximum ' + self.labels[comp_category]
-        ax.set_ylabel(ylabel, fontsize=fs_ylabel, labelpad=10)
+        ax.tick_params(axis='y', labelsize=fs_yticks, which='major', pad=4)
+        ylabel = self.labels[comp_category]
+        ax.set_ylabel(ylabel, fontsize=fs_ylabel, labelpad=pad_ylabel)
 
         if self.color_factor:
             norm = mpc.Normalize(vmin=c.min(), vmax=c.max())
@@ -746,9 +782,24 @@ class HeatMap(BaseChart):
         ax.spines['right'].set_visible(False)
 
         if rects:
-            for rect in rects:
-                rect_patch = plt.Rectangle(*rect['rect_args'], **rect['rect_kwargs'])
+            self.box_dfs = {}
+            for i, rect in enumerate(rects):
+                rect_patch = plt.Rectangle(*rect['args'], **rect['kwargs'])
                 ax.add_patch(rect_patch)
+                box_stats = self.box_stats(rect['date'], rect['dirxn'], *rect['args'][0], rect['factor_in_the_box'], rect['inverse'])
+                self.box_dfs[i] = box_stats.pop('df')
+
+                if rect['text']:
+                    box_length = 35
+                    text = 'Box {}{}'.format(i+1, ' ' * box_length)
+                    text += '\n{}:{}{}'.format('# of Regions', ' ' * (box_length - 10), box_stats.pop('num_regs'))
+                    text += '\n{}:{}{:.0%}'.format('% of All Deaths', ' ' * (box_length - 14), box_stats.pop('all_deaths'))
+                    for statname, val in box_stats.items():
+                        text += '\n{}:{}{:.{}}'.format(statname,' ' * (box_length - len(statname) - 5), val, '0%' if '%' in statname else '0f')
+                    plt.text(
+                        rect['x_text'], rect['y_text'], text, 
+                        {'alpha': 1, 'color': 'black', 'style': 'italic', 'fontsize': 12, 'ha': rect['ha'], 'va': 'center', 'bbox':dict(facecolor=rect['kwargs']['color'], alpha=rect['alpha'], edgecolor='white')}
+                    )
 
         if save_file:
             plt.savefig(filename, bbox_inches='tight')

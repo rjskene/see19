@@ -1,7 +1,7 @@
 import setuptools
 
-with open('README.md', 'r') as fh:
-    long_description = fh.read()
+# with open('README.md', 'r') as fh:
+#     long_description = fh.read()
 
 requires = [
   'bokeh>=2.0.0',
@@ -13,12 +13,12 @@ requires = [
 
 setuptools.setup(
     name='see19',
-    version='0.1.6',
+    version='0.1.8',
     author='Ryan Skene',
     author_email='rjskene83@gmail.com',
     description='An interface for the visualizing and analysing the see19 dataset',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
+    # long_description=long_description,
+    # long_description_content_type='text/markdown',
     url='https://github.com/ryanskene/see19',
     packages=['see19'],
     install_requires=requires,

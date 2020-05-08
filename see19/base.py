@@ -4,7 +4,7 @@ import pandas as pd
 
 from .charts import CompChart2D, CompChart4D, HeatMap
 from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
-        STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
+        STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
         COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, \
         BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS
 
@@ -79,6 +79,7 @@ class CaseStudy:
     CAUSES = CAUSES
     MAJOR_CAUSES = MAJOR_CAUSES
     STRINDEX_CATS = STRINDEX_CATS
+    STRINDEX_SUBCATS = STRINDEX_SUBCATS
     CONTAIN_CATS = CONTAIN_CATS
     ECON_CATS = ECON_CATS
     HEALTH_CATS = HEALTH_CATS 
@@ -89,7 +90,7 @@ class CaseStudy:
     def __init__(
         self, baseframe, count_dma=3, count_categories=[], factors=[], 
         regions=[], countries=[], excluded_regions=[], excluded_countries=[], 
-        factor_dmas={}, lognat=False,
+        factor_dmas={}, lognat=False, mobi_dmas={},
         start_factor='deaths', start_hurdle=1, tail_factor='', tail_hurdle=1.2, 
         min_deaths=0, min_days_from_start=0, 
         temp_scale='C',
@@ -130,7 +131,10 @@ class CaseStudy:
         self.age_ranges = [factor for factor in self.factors if factor in ALL_RANGES]
         self.causes = [factor for factor in self.factors if factor in self.CAUSES]
         self.strindex_factors = [factor for factor in self.factors if factor in self.STRINDEX_CATS]
-
+        
+        self.mobis = [factor for factor in self.factors if factor in self.MOBIS]
+        self.mobi_dmas = mobi_dmas
+        
         self.pop_cats = self.age_ranges + self.causes
         if 'visitors' in factors:
             self.pop_cats.append('visitors')
@@ -151,7 +155,43 @@ class CaseStudy:
         self.comp_chart = CompChart2D(self)
         self.comp_chart4d = CompChart4D(self)
         self.heatmap = HeatMap(self)
+
+    def total_cases(self, date, regions=None):        
+        """
+        Parameter
+        _________
         
+        date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
+
+        Returns 
+        ________
+
+        type float, total global cases as of specified date
+        """
+        baseframe = self.baseframe.copy(deep=True)
+        if regions:
+            baseframe = baseframe[baseframe.region_name.isin(regions)]
+
+        return baseframe[baseframe.date == date].cases.sum()
+
+    def total_deaths(self, date, regions=None):
+        """
+        Parameter
+        _________
+        
+        date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
+
+        Returns 
+        ________
+
+        type float, total global fatalities as of specified date
+        """
+        baseframe = self.baseframe.copy(deep=True)
+        if regions:
+            baseframe = baseframe[baseframe.region_name.isin(regions)]
+        
+        return baseframe[baseframe.date == date].deaths.sum()
+
     def _filter_baseframe(self):
         """
         Filters and processes the base dataframe to isolate specific data for analysis
@@ -244,6 +284,14 @@ class CaseStudy:
                     df_group[factor + '_growth'] = df_group[factor] / df_group[factor].shift(1)
                     df_group[factor + '_growth_dma'] = df_group[factor + '_growth'].rolling(window=dma).mean()
             
+            if self.mobis:
+                for mobi in self.mobis:
+                    df_group[mobi] /= 100
+                for mobi, dma in self.mobi_dmas.items():
+                    df_group[mobi + '_growth'] = df_group[mobi] + 1
+                    df_group[mobi + '_growth_dma'] = df_group[mobi + '_growth'].rolling(window=dma).mean()
+                    df_group[mobi + '_dma'] = df_group[mobi + '_growth_dma'] - 1
+
             # Filter observations on the front end
             # If there are no observations that satisfy the hurdle
             # set df_group to empty 

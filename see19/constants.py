@@ -59,13 +59,14 @@ CAUSES = [
     'other', 'external'
 ]
 MAJOR_CAUSES = ['circul', 'infectious', 'respir', 'endo']
-STRINDEX_CATS = [
+STRINDEX_SUBCATS = [
     'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8',
-    'e1', 'e2', 'e3', 'e4', 'h1', 'h2', 'h3', 'h4', 'h5', 'strindex'
+    'e1', 'e2', 'e3', 'e4', 'h1', 'h2', 'h3', 'h4', 'h5'
 ]
+STRINDEX_CATS = STRINDEX_SUBCATS + ['strindex']
 CONTAIN_CATS = [cat for cat in STRINDEX_CATS if 'c' in cat]
 
-ECON_CATS = [cat for cat in STRINDEX_CATS if 'e' in cat]
+ECON_CATS = [cat for cat in STRINDEX_CATS if 'e' in cat and cat != 'strindex']
 HEALTH_CATS = [cat for cat in STRINDEX_CATS if 'h' in cat]
 
 POLLUTS = [
