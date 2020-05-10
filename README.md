@@ -14,6 +14,8 @@ The dataset is in `csv` format and can be found [here](https://github.com/ryansk
 
 You can find relevant statistics and detailed sourcing in the **[Guide](https://ryanskene.github.io/see19/)**
 
+**NOTE**: The data source for temperurate, UVB radiation, and dewpoint temperature has not updated since April 30. This is about 5 days behind its typical update period. I have reached out to the provider.
+
 # The Package
 
 the `see19` package is available on [pypi](https://pypi.org/project/see19/) and can be installed as follows:
@@ -60,7 +62,7 @@ In addition to the dataset, `see19` is a python package that provides:
 * Statistical analysis is also a goal of the project and I expect to add such analysis tools as time progresses. Until then, the data is available for all.
 
 <br/>
-<div align="center"><b>I AM NOT A PROFESSIONAL OR AN ACADEMIC. CALL ME AN AMATEUR "ENTHUSIAST". THIS IS A SOLO PROJECT UNTIL NOW. <br/>I AM SURE THERE ARE MISTAKES. PLEASE FLAG ANY ISSUES YOU SEE!</b></div>
+<div align="center"><b> THIS IS A SOLO PROJECT. <br/>I FIND ERRORS WITHIN THE DATA REGULARLY. PLEASE FLAG ANY ISSUES YOU SEE!</b></div>
 
 ***
 # Suggestions For Additional Data
@@ -162,5 +164,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](output_13_0.png)
+![png](README_files/output_13_0.png)
 
