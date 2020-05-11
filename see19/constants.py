@@ -1,4 +1,5 @@
 COUNTRIES_W_REGIONS = ['AUS', 'BRA', 'CAN', 'CHN', 'ITA', 'USA']
+COVID_DRAGONS = ['Hong Kong', 'Taiwan', 'Korea, South', 'Malaysia']
 
 AGE_RANGES = [(i * 5, i * 5 + 4) for i in range(int(85 / 5))]
 AGE_COLS = ['A' + str(age_range[0]).zfill(2) + '_' + str(age_range[1]).zfill(2) + 'B' for age_range in AGE_RANGES]
@@ -68,6 +69,7 @@ CONTAIN_CATS = [cat for cat in STRINDEX_CATS if 'c' in cat]
 
 ECON_CATS = [cat for cat in STRINDEX_CATS if 'e' in cat and cat != 'strindex']
 HEALTH_CATS = [cat for cat in STRINDEX_CATS if 'h' in cat]
+KEY3_CATS = ['h1', 'h2', 'h3']
 
 POLLUTS = [
     'co', 'pm25', 'o3', 'no2', 'so2',
@@ -89,9 +91,8 @@ BASE_PLUS_PER_CATS = BASECOUNT_CATS + PER_CATS
 LOGNAT_CATS = [cat + '_lognat' for cat in BASE_PLUS_PER_CATS]
 ALL_CATS =  BASECOUNT_CATS + PER_CATS + LOGNAT_CATS
 
-BASE_COLS = [
-    'region_id', 'country_id', 'region_name', 'country_code', 'country', 
+META_COLS = ['region_id', 'country_id', 'region_name', 'country_code', 'country', 
     'date', 'cases', 'deaths',
-    'population', 'land_KM2', 'land_dens', 'city_KM2', 'city_dens', 
-    *ALL_RANGES
+    'population', 'land_KM2', 'land_dens', 'city_KM2', 'city_dens',
 ]
+BASE_COLS = META_COLS + ALL_RANGES

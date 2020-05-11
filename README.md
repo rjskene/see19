@@ -8,6 +8,8 @@
 
 [What Factors Are Correlated With COVID19 Fatality Rates?](https://ryanskene.github.io/see19/analysis/What%20Factors%20Are%20Correlated%20With%20COVID19%20Fatality%20Rates%3F.html)
 
+[The COVID Dragons](https://ryanskene.github.io/see19/analysis/The%20COVID%20Dragons.html)
+
 ***
 # The Dataset
 The dataset is in `csv` format and can be found [here](https://github.com/ryanskene/see19/tree/master/dataset)
@@ -164,5 +166,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](README_files/output_13_0.png)
+![png](output_13_0.png)
 
