@@ -205,6 +205,7 @@ class CompChart2D(BaseChart):
             self.df_comp = self.df_comp[self.df_comp['region_name'].isin(regions)]
         else:
             regions = list(self.regions)
+            print (regions)
         
         # Setup additional class attributes
         self.comp_category = comp_category
@@ -244,7 +245,7 @@ class CompChart2D(BaseChart):
         if palette_shift:
             coloridx[:-1] += palette_shift
         palette = palette_base[coloridx]
-
+        
         if comp_type == 'multiline':
             ml_data = self._multiline_source()
             ml_data['color'] = palette[:-1]

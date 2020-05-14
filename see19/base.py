@@ -109,7 +109,17 @@ class CaseStudy:
             self.pop_cats.append('visitors')
         if 'gdp' in factors:
             self.pop_cats.append('gdp')
-        
+
+        if self.country_level and self.mobis:
+                raise AttributeError("""
+                    Google mobility factors {} are not available when country_level=True
+                """.format(self.mobis)
+            )
+        if not all(factor in self.ALLOWED_FACTORS_TO_FAVOR_EARLIER for factor in self.factors_to_favor_earlier):
+            raise AttributeError("""
+                Only the following categories can included in factors_to_favor_earlier: {}
+        """.format(' '.join(self.ALLOWED_FACTORS_TO_FAVOR_EARLIER)))
+
         if not all(factor in self.ALLOWED_FACTORS_TO_FAVOR_EARLIER for factor in self.factors_to_favor_earlier):
             raise AttributeError("""
                 Only the following categories can included in factors_to_favor_earlier: {}
@@ -259,7 +269,6 @@ class CaseStudy:
 
         if self.country_level or country_level:
             df = self._agg_to_country_level(df)
-            self.regions = df.region_name.unique().tolist()
         
         if self.regions:
             df = df[df['region_name'].isin(self.regions)]
@@ -272,7 +281,11 @@ class CaseStudy:
         
         if self.excluded_countries:
             df = df[~df['country'].isin(self.excluded_countries)]            
-        
+
+        # Reset regions attribute so that it reflects
+        # the actual remaining region in the dataframe        
+        self.regions = df.region_name.unique().tolist()
+
         # Shrink DF to include only columns for factors in focus
         df = df[CASE_COLS + self.factors]
 
