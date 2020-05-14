@@ -140,6 +140,7 @@ cython_debug/
 # Custom
 .gitattributes
 migrations/
+testset/
 .DS_Store
 
 # These are local items I want to keep to myself for now

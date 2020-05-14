@@ -77,7 +77,7 @@ class CaseStudy:
         self.regions = accept_string_or_list(regions)
         self.countries = accept_string_or_list(countries)
         self.excluded_regions = accept_string_or_list(excluded_regions)
-        self.excluded_countries = accept_string_or_list(excluded_regions)
+        self.excluded_countries = accept_string_or_list(excluded_countries)
                 
         # Hurdles to filter data and isolate regions/timeframes most pertinent to analysis
         self.min_deaths = min_deaths
@@ -270,7 +270,7 @@ class CaseStudy:
         if self.excluded_regions:
             df = df[~df['region_name'].isin(self.excluded_regions)]
         
-        if self.excluded_countries:    
+        if self.excluded_countries:
             df = df[~df['country'].isin(self.excluded_countries)]            
         
         # Shrink DF to include only columns for factors in focus

@@ -186,14 +186,15 @@ class CompChart2D(BaseChart):
     
     def make(
             self, comp_category='deaths_new_dma_per_1M', regions=None,
-            comp_type='vbar', overlay=None, title='', 
+            comp_type='vbar', overlay=None, title='', legend_title='Region: Start Date',
             palette_base=Viridis256, palette_flip=False, palette_shift=0, 
             multiline_labels=True, label_offsets={}, fs_labels=8, 
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
-            fs_xticks=16, fs_yticks=16,
+            fs_xticks=16, fs_yticks=16, fs_legend=8,
             width=750, height=500, base_inc=.25,
-            save_file=False, filename=None,
+            save_file=False, filename=None, annotations=[],
+            bg_color='white', bg_alpha=1, border_color='white', border_alpha=1,
         ):
         self.df_comp = self.df[self.df[comp_category].notna()].copy(deep=True)
         
@@ -248,7 +249,6 @@ class CompChart2D(BaseChart):
             ml_data = self._multiline_source()
             ml_data['color'] = palette[:-1]
             source_ml = ColumnDataSource(ml_data)
-            
             p.multi_line(xs='x', ys='y', line_color='color', legend_group='regions', line_width=5, source=source_ml)
 
             # Setup labels for each line
@@ -289,9 +289,14 @@ class CompChart2D(BaseChart):
                 )
         
         p.legend.visible = legend
-        p.legend.title = 'Region: Start Date'
+
+        if legend_title:
+            p.legend.title = 'Region: Start Date'
         p.legend.location = legend_location
         p.legend.border_line_color = 'black'
+
+        p.legend.label_text_font_size = str(fs_legend) + 'pt'
+        p.legend.background_fill_alpha = 0.0
 
         p.xaxis.axis_label = self.labels['days_' + self.start_factor]
         p.xaxis.axis_label_text_font_size = str(x_fontsize) + 'pt'
@@ -316,15 +321,24 @@ class CompChart2D(BaseChart):
                 
             data2 = {'x': overlay_days, 'y': overlay_by_region, 'color': palette[:-1]}
             source2 = ColumnDataSource(data=data2)
-            start = min(olay for region in overlay_by_region for olay in region) * 0.5
-            end = max(olay for region in overlay_by_region for olay in region) * 1.5
+            start = min(olay for region in overlay_by_region for olay in region) * 1.5
+            end = max(olay for region in overlay_by_region for olay in region) * 1.1
             p.extra_y_ranges = {overlay: Range1d(start=start, end=end)}
-            p.multi_line(xs='x', ys='y', line_color='color', line_width=4, source=source2,
-                      y_range_name=overlay, alpha=.4,
+            p.multi_line(xs='x', ys='y', line_color='red', line_width=4, source=source2,
+                      y_range_name=overlay, alpha=.3,
             )
 
             right_axis_label = self.labels[overlay]
             p.add_layout(LinearAxis(y_range_name='{}'.format(overlay), axis_label=right_axis_label), 'right')
+
+        p.xgrid.grid_line_color = None
+        p.ygrid.grid_line_color = None
+        p.outline_line_color = border_color
+
+        p.background_fill_color = bg_color
+        p.background_fill_alpha = bg_alpha
+        p.border_fill_color = border_color
+        p.border_fill_alpha = border_alpha
 
         if save_file:
             export_png(p, filename=filename)
@@ -420,7 +434,7 @@ class CompChart4D(BaseChart):
             palette_base='coolwarm', color_interval=(), bar_color='orange',
             x_colorbar=0.2, y_colorbar=-.05, h_colorbar=.3, w_colorbar=.01, a_colorbar= 'vertical',
             grid_grey= 87, pane_grey=200, tick_grey=30,
-            cb_labelpad=-50,
+            abbreviate=True,
             zaxis_left=False, gridlines=True, tight=True,
             width=16, height=8, save_file=False, filename=''
         ):
@@ -545,7 +559,7 @@ class CompChart4D(BaseChart):
         # Set ticklabels
         # If labels close to end of axis, truncate their names to fit in image
         if x_ticks:
-            xticklabels = [self._casestudy._abbreviator(region) for region in self.region_names]
+            xticklabels = [self._casestudy._abbreviator(region) if abbreviate else region for region in self.region_names]
             for i in range(1, 7):
                 if len(xticklabels[-i]) > 7:
                     xticklabels[-i] = xticklabels[-i][:6] + '.'
@@ -833,12 +847,16 @@ class BarCharts(BaseChart):
         max_counts += [a + b for a in self._casestudy.STRINDEX_CATS for b in ['', '_dma']]
         mobi_counts = [a + b for a in self._casestudy.mobi_dmas.keys() for b in ['', '_dma']]
         
+        # All figures as of specified date
+        if self.as_of:
+            df = df[df.date == self.as_of]
+
         groups = []
         for region_id, df_group in df.groupby('region_id'):
             groupdict = {}
             groupdict['region_id'] = region_id
 
-            for col in df_group.columns:  
+            for col in df_group.columns:
                 if col in first_counts:
                     groupdict[col] = df_group[col].iloc[0]
                 if col in last_counts:
@@ -861,13 +879,14 @@ class BarCharts(BaseChart):
         
         return df_comp
 
-    def make(self, factors=[], regions=[],
-        title='', y_title=0.9,
+    def make(self, factors=[], regions=[], as_of=None,
+        title='', y_title=0.9, subtitles=True,
         fs_xticks=12, fs_yticks=12,
         fs_xlabel=24, fs_title=16, fs_subtitle=12,
         pad_xlabel=20, pad_ylabel=12,
         annotations=[], hlines=[], hline_alpha=.1,
         colors=['red', 'magenta', 'blue'],
+        abbreviate=True,
         width=16, height=12, save_file=False, filename=''    
     ):
         df_bcs = self.df.copy(deep=True)
@@ -877,7 +896,8 @@ class BarCharts(BaseChart):
 
         regions = regions if regions else self.regions
         factors = accept_string_or_list(factors if factors else self._casestudy.factors)
-        
+        self.as_of = as_of
+
         df_bcs = df_bcs[[*META_COLS, *[col for col in factors if col not in META_COLS]]]
         self.df_bcs = self._data_morph_for_barcharts(df_bcs)
         self.df_bcs = self.df_bcs[regions]
@@ -895,7 +915,7 @@ class BarCharts(BaseChart):
         color_key['WorldAvg'] = colors[1]
         c = [color_key[region] if region in color_key.keys() else colors[2] for region in self.df_bcs.columns]
         
-        x = [self._casestudy._abbreviator(region) for region in self.df_bcs.columns]
+        x = [self._casestudy._abbreviator(region) if abbreviate else region for region in self.df_bcs.columns]
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
         for i, factor in np.ndenumerate(factors):
@@ -907,7 +927,9 @@ class BarCharts(BaseChart):
 
                 axs[i].tick_params(axis='x', labelsize=fs_xticks)
                 axs[i].tick_params(axis='y', labelsize=fs_yticks)
-                axs[i].set_title(self.labels[factor], fontsize=fs_subtitle)
+
+                if subtitles:
+                    axs[i].set_title(self.labels[factor], fontsize=fs_subtitle)
         
         fig.suptitle(title, fontsize=fs_title, y=y_title)
 
@@ -981,7 +1003,7 @@ class ScatterFlow(BaseChart):
         else:
             regions = np.array(regions)
         
-        fig, axs = plt.subplots(*regions.shape, figsize=(width, height))
+        fig, axs = plt.subplots(*regions.shape, figsize=(width, height), facecolor="red")
         cmap = plt.cm.get_cmap('RdPu', 4)
 
         strindex_labels = [self.labels[val] for val in self.subcats_key.values()]
@@ -1049,12 +1071,14 @@ class ScatterFlow(BaseChart):
         cb.set_label('Score', labelpad=pad_clabel, fontsize=fs_clabel)
         cax.yaxis.set_ticks_position(cb_ticks_pos)
         cax.yaxis.set_label_position(cb_label_pos)
-
+        
+        
         ax = fig.add_subplot(111, frameon=False)
         plt.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off', length=0)
         ax.set_title('Quarantine Evolution: Change in Oxford Stringency Policy Indicators', fontsize=fs_title, y=y_title)
         ax.set_xlabel('Days Since January 1', labelpad=20, fontsize=fs_xlabel)
-
+        ax.set_facecolor('#048ba8')
+        
         plt.subplots_adjust(left=.1, bottom=.1, right=1, top=1, wspace=0.2, hspace=0.22)
         
         if save_file:
