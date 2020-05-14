@@ -340,6 +340,9 @@ class CompChart2D(BaseChart):
         p.border_fill_color = border_color
         p.border_fill_alpha = border_alpha
 
+        for annot in annotations:
+            p.add_layout(mytext)
+
         if save_file:
             export_png(p, filename=filename)
 
