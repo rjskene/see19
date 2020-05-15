@@ -11,19 +11,19 @@ from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
-def get_baseframe():
-    url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
+def get_baseframe(test=False):
+    if test:
+        url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_testset.txt'
+    else:
+        url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
     page = requests.get(url)
-    df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/dataset/see19-{}.csv'.format(page.text)
-    
+    df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)
+
     return pd.read_csv(df_url, parse_dates=['date'])
 
 class CaseStudy:
     """
     Class for filtering the baseframe dataset, analysing, and generating graphs
-    
-    #### TO DO #####
-        1: Make it so factors can take keywords msmts, age_ranges, etc to get multiple factors easily
     """
     COUNT_TYPES = COUNT_TYPES    
     BASECOUNT_CATS = BASECOUNT_CATS
@@ -197,7 +197,7 @@ class CaseStudy:
                 initials = '.'.join(reg[0] for reg in region) + '.'
                 return initials
         else:
-            return region[0][:6]
+            return region[0][:2]
 
     def _earlier_is_better(self, series, scale_factor=1):
         """

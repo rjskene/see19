@@ -890,7 +890,7 @@ class BarCharts(BaseChart):
         pad_xlabel=20, pad_ylabel=12,
         annotations=[], hlines=[], hline_alpha=.1,
         colors=['red', 'magenta', 'blue'],
-        abbreviate=True,
+        abbreviate=True, sort_cols=[], feature_regions=[],
         width=16, height=12, save_file=False, filename=''    
     ):
         df_bcs = self.df.copy(deep=True)
@@ -899,13 +899,16 @@ class BarCharts(BaseChart):
             df_bcs = df_bcs[df_bcs['region_name'].isin(regions)]
 
         regions = regions if regions else self.regions
+        
         factors = accept_string_or_list(factors if factors else self._casestudy.factors)
         self.as_of = as_of
 
         df_bcs = df_bcs[[*META_COLS, *[col for col in factors if col not in META_COLS]]]
         self.df_bcs = self._data_morph_for_barcharts(df_bcs)
-        self.df_bcs = self.df_bcs[regions]
         
+        if sort_cols:
+            self.df_bcs = self.df_bcs.sort_values(by=sort_cols, axis=1, ascending=False)
+
         if len(factors) > 1:
             if len(factors) % 2 != 0:
                 factors.append('')
@@ -915,10 +918,10 @@ class BarCharts(BaseChart):
 
         fig, axs = plt.subplots(*factors.shape, figsize=(width, height))
         
-        color_key = {dragon: colors[0] for dragon in COVID_DRAGONS}
+        color_key = {feature: colors[0] for feature in feature_regions}
         color_key['WorldAvg'] = colors[1]
         c = [color_key[region] if region in color_key.keys() else colors[2] for region in self.df_bcs.columns]
-        
+
         x = [self._casestudy._abbreviator(region) if abbreviate else region for region in self.df_bcs.columns]
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
@@ -934,7 +937,7 @@ class BarCharts(BaseChart):
 
                 if subtitles:
                     axs[i].set_title(self.labels[factor], fontsize=fs_subtitle)
-        
+
         fig.suptitle(title, fontsize=fs_title, y=y_title)
 
         plt.subplots_adjust(hspace=0.4)

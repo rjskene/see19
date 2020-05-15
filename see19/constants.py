@@ -96,3 +96,5 @@ META_COLS = ['region_id', 'country_id', 'region_name', 'country_code', 'country'
     'population', 'land_KM2', 'land_dens', 'city_KM2', 'city_dens',
 ]
 BASE_COLS = META_COLS + ALL_RANGES
+
+AMOBIS = ['transit_apple', 'driving_apple', 'walking_apple']
