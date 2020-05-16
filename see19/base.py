@@ -7,7 +7,8 @@ from .charts import CompChart2D, CompChart4D, HeatMap, BarCharts, ScatterFlow
 from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
         COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, \
-        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS
+        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
+        AMOBIS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
@@ -47,6 +48,7 @@ class CaseStudy:
     KEY3_CATS = KEY3_CATS
 
     MOBIS = MOBIS
+    AMOBIS = AMOBIS
     DMA_CATS = MSMTS + POLLUTS + STRINDEX_CATS
 
     PER_APPENDS = PER_APPENDS
@@ -101,7 +103,7 @@ class CaseStudy:
         self.causes = [factor for factor in self.factors if factor in self.CAUSES]
         self.strindex_factors = [factor for factor in self.factors if factor in self.STRINDEX_CATS]
         
-        self.mobis = [factor for factor in self.factors if factor in self.MOBIS]
+        self.mobis = [factor for factor in self.factors if factor in [*self.MOBIS, *self.AMOBIS]]
         self.mobi_dmas = mobi_dmas
         
         self.pop_cats = self.age_ranges + self.causes

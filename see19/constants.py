@@ -98,5 +98,3 @@ META_COLS = ['region_id', 'country_id', 'region_name', 'country_code', 'country'
 BASE_COLS = META_COLS + ALL_RANGES
 
 AMOBIS = ['transit_apple', 'driving_apple', 'walking_apple']
-
-TEST = "THISISIS SATEST"
