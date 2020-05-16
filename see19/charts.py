@@ -205,7 +205,6 @@ class CompChart2D(BaseChart):
             self.df_comp = self.df_comp[self.df_comp['region_name'].isin(regions)]
         else:
             regions = list(self.regions)
-            print (regions)
         
         # Setup additional class attributes
         self.comp_category = comp_category
@@ -342,7 +341,7 @@ class CompChart2D(BaseChart):
         p.border_fill_alpha = border_alpha
 
         for annot in annotations:
-            p.add_layout(mytext)
+            p.add_layout(Label(**annot))
 
         if save_file:
             export_png(p, filename=filename)
