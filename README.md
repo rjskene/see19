@@ -3,6 +3,15 @@
 **An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
 
 ***
+***NOTE ON THE TEST DATASET***
+
+As of May 15, a `testset` folder has been added to the master. Going forward, the testset will include new data  (either additional factors or new regions) that has not yet been incorporated into the `see19` interface. The goal is to integrate the new data into the interface over time. The `testset` will be update concurrently with the main dataset.
+
+Data currently available only in the testset:
+
+* [Apple Mobility index](https://www.apple.com/covid19/mobility)
+
+***
 # Latest Analysis
 [How Effective Is Social Distancing?](https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html)
 
@@ -164,5 +173,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](README_files/output_13_0.png)
+![png](output_14_0.png)
 
