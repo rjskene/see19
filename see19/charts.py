@@ -301,6 +301,7 @@ class CompChart2D(BaseChart):
 
         p.legend.label_text_font_size = str(fs_legend) + 'pt'
         p.legend.background_fill_alpha = 0.0
+        p.legend.border_line_alpha = 0.0
 
         p.xaxis.axis_label = self.labels['days_' + self.start_factor]
         p.xaxis.axis_label_text_font_size = str(x_fontsize) + 'pt'
