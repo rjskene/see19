@@ -194,7 +194,8 @@ class CompChart2D(BaseChart):
             multiline_labels=True, label_offsets={}, fs_labels=8, 
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
-            fs_xticks=16, fs_yticks=16, fs_legend=8,
+            fs_xticks=16, fs_yticks=16, 
+            fs_legend=8, h_legend=20, w_legend=20,
             width=750, height=500, base_inc=.25,
             save_file=False, filename=None, annotations=[],
             bg_color='white', bg_alpha=1, border_color='white', border_alpha=1,
@@ -208,7 +209,6 @@ class CompChart2D(BaseChart):
             self.df_comp = self.df_comp[self.df_comp['region_name'].isin(regions)]
         else:
             regions = list(self.regions)
-            print (regions)
         
         # Setup additional class attributes
         self.comp_category = comp_category
@@ -296,8 +296,13 @@ class CompChart2D(BaseChart):
 
         if legend_title:
             p.legend.title = 'Region: Start Date'
+
         p.legend.location = legend_location
         p.legend.border_line_color = 'black'
+        p.legend.glyph_height = h_legend
+        p.legend.glyph_width = w_legend
+        p.legend.label_height = h_legend
+        p.legend.label_width = h_legend
 
         p.legend.label_text_font_size = str(fs_legend) + 'pt'
         p.legend.background_fill_alpha = 0.0
@@ -346,7 +351,7 @@ class CompChart2D(BaseChart):
         p.border_fill_alpha = border_alpha
 
         for annot in annotations:
-            p.add_layout(mytext)
+            p.add_layout(Label(**annot))
 
         if save_file:
             export_png(p, filename=filename)
