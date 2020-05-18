@@ -27,6 +27,8 @@ Data currently available only in the testset:
 
 **NOTE:** Brazil is not included in the `tests` count data currently. Brazil test counts are only available on the country level whereas case and fatality data is available on a regional level. I am exploring methodsto allocate aggregate tests among the regions (perhaps simply as percentage of population or cases counts).
 
+**ANOTHER NOTE:** Testing statistics are still quite spotty internationally. For instance, many European countries only appear to report cumulative test counts on a weekly basis. Different methods of interpolation will be explored for daily values.
+
 ***
 # Latest Analysis
 [How Effective Is Social Distancing?](https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html)
