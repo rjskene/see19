@@ -81,7 +81,7 @@ POLLUTS = [
 TEMP_MSMTS = ['temp', 'dewpoint']
 MSMTS = ['uvb', 'rhum'] + TEMP_MSMTS
 
-COUNT_TYPES = ['cases', 'deaths']
+COUNT_TYPES = ['cases', 'deaths', 'tests']
 COUNT_APPENDS = ['_dma', '_new', '_new_dma']
 BASECOUNT_CATS = [count_type + count_append for count_type in COUNT_TYPES for count_append in COUNT_APPENDS] + COUNT_TYPES
 
