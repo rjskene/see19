@@ -7,6 +7,8 @@
 
 As of May 15, a `testset` folder has been added to the master. Going forward, the testset will include new data  (either additional factors or new regions) that has not yet been incorporated into the `see19` interface. The goal is to integrate the new data into the interface over time. The `testset` will be update concurrently with the main dataset.
 
+The existing `see19` package will ***NOT*** be compatiable with the testset, **HOWEVER** you can download the `testset` via `get_baseframe` by setting `test=True`.
+
 Data currently available only in the testset:
 
 * [Apple Mobility index](https://www.apple.com/covid19/mobility)
