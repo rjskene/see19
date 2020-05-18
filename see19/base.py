@@ -8,7 +8,7 @@ from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
         COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, \
         BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
-        AMOBIS
+        AMOBIS, COUNT_APPENDS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
@@ -52,6 +52,8 @@ class CaseStudy:
     DMA_CATS = MSMTS + POLLUTS + STRINDEX_CATS
 
     PER_APPENDS = PER_APPENDS
+    COUNT_APPENDS = COUNT_APPENDS
+
     ALLOWED_FACTORS_TO_FAVOR_EARLIER = ['key3_sum', 'h_sum', 'e_sum', 'c_sum'] + STRINDEX_CATS
     
     def __init__(
@@ -312,7 +314,12 @@ class CaseStudy:
                 df_group[count_type + '_new'] = df_group[count_type].diff()
                 df_group[count_type + '_dma'] = df_group[count_type].rolling(window=self.count_dma).mean()
                 df_group[count_type + '_new_dma'] = df_group[count_type + '_new'].rolling(window=self.count_dma).mean()
-            
+
+            df_group['cases_per_test'] = df_group['cases'] / df_group['tests']
+            df_group['tests_per_case'] = df_group['tests'] / df_group['cases']
+            for append in self.COUNT_APPENDS:
+                df_group['cases{}_per_test{}'.format(append, append)] = df_group['cases{}'.format(append)] / df_group['tests{}'.format(append)]
+
             for count_cat in self.BASECOUNT_CATS:
                 df_group[count_cat + '_per_1M'] = df_group[count_cat] / df_group['population'] * 1000000
                 df_group[count_cat + '_per_person_per_land_KM2'] = df_group[count_cat] / (df_group['land_dens'])

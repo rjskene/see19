@@ -65,6 +65,7 @@ class BaseChart:
             'cases_new_dma_per_person_per_city_KM2': 'Daily Cases / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_person_per_land_KM2': 'Daily Cases / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
+            'tests_new_dma_per_1M': 'Daily Tests per 1M ({}DMA)'.format(self.count_dma),
             'temp': 'Temperature ({}{})'.format(self.degrees, self.temp_scale),
             'dewpoint': 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale),
             'uvb': 'UV-B Radiation in J / M\u00b2',

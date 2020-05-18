@@ -92,7 +92,7 @@ LOGNAT_CATS = [cat + '_lognat' for cat in BASE_PLUS_PER_CATS]
 ALL_CATS =  BASECOUNT_CATS + PER_CATS + LOGNAT_CATS
 
 META_COLS = ['region_id', 'country_id', 'region_name', 'country_code', 'country', 
-    'date', 'cases', 'deaths',
+    'date', 'cases', 'deaths', 'tests',
     'population', 'land_KM2', 'land_dens', 'city_KM2', 'city_dens',
 ]
 BASE_COLS = META_COLS + ALL_RANGES

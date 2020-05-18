@@ -3,6 +3,33 @@
 **An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
 
 ***
+***NOTE ON THE TEST DATASET***
+
+As of May 15, a `testset` folder has been added to the master. Going forward, the testset will include new data  (either additional factors or new regions) that has not yet been incorporated into the `see19` interface. The goal is to integrate the new data into the interface over time. The `testset` will be update concurrently with the main dataset.
+
+The existing `see19` package will ***NOT*** be compatiable with the testset, **HOWEVER** you can download the `testset` via `get_baseframe` by setting `test=True`.
+
+Data currently available only in the testset:
+
+* [Apple Mobility index](https://www.apple.com/covid19/mobility)
+
+* Test counts
+    * [Country level](https://data.humdata.org/dataset/total-covid-19-tests-performed-by-country)
+    * [Italy](https://github.com/pcm-dpc/COVID-19)
+        * **NOTE:** Italian testing has two categories that complicate the data somewhat
+            * `tamponi` refers to swabs. Swabs have been recorded since very early on. There are generally multiple swabs per individual whereas most test counts are one test per individual.
+            * `casi_testati` refers to the more standard one test per person. This metric was not reliably tract before mid-April
+            * for metrics prior to mid-April, `see19` adjusts the `tamponi` counts by finding the average `tamponi` per `case_testati` across the all data then dividing the tampons by the average to estimate casi_testati
+    * [Australia](https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json)
+    * [Canada](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html)
+    * [United States](https://covidtracking.com/)
+
+
+**NOTE:** Brazil is not included in the `tests` count data currently. Brazil test counts are only available on the country level whereas case and fatality data is available on a regional level. I am exploring methodsto allocate aggregate tests among the regions (perhaps simply as percentage of population or cases counts).
+
+**ANOTHER NOTE:** Testing statistics are still quite spotty internationally. For instance, many European countries only appear to report cumulative test counts on a weekly basis. Different methods of interpolation will be explored for daily values.
+
+***
 # Latest Analysis
 [How Effective Is Social Distancing?](https://ryanskene.github.io/see19/analysis/How%20Effective%20Is%20Social%20Distancing%3F.html)
 
@@ -164,5 +191,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](README_files/output_13_0.png)
+![png](output_14_0.png)
 
