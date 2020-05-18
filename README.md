@@ -20,9 +20,9 @@ Data currently available only in the testset:
             * `tamponi` refers to swabs. Swabs have been recorded since very early on. There are generally multiple swabs per individual whereas most test counts are one test per individual.
             * `casi_testati` refers to the more standard one test per person. This metric was not reliably tract before mid-April
             * for metrics prior to mid-April, `see19` adjusts the `tamponi` counts by finding the average `tamponi` per `case_testati` across the all data then dividing the tampons by the average to estimate casi_testati
-* [Australia](https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json)
-* [Canada](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html)
-* [United States](https://covidtracking.com/)
+    * [Australia](https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json)
+    * [Canada](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html)
+    * [United States](https://covidtracking.com/)
 
 
 **NOTE:** Brazil is not included in the `tests` count data currently. Brazil test counts are only available on the country level whereas case and fatality data is available on a regional level. I am exploring methodsto allocate aggregate tests among the regions (perhaps simply as percentage of population or cases counts).
