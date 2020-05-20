@@ -2,6 +2,8 @@ import requests
 import numpy as np
 import pandas as pd
 
+import us
+
 from .helpers import accept_string_or_list
 from .charts import CompChart2D, CompChart4D, HeatMap, BarCharts, ScatterFlow
 from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
@@ -189,19 +191,23 @@ class CaseStudy:
         Used to abbreviate region names
 
         available abbreviate option:
-            'initials': finds initials 
+            'initials': finds initials
+            'first': finds first word of name
         """
         abbreviate = abbreviate if abbreviate else self.abbreviate
-        region = region.split(' ')
-        if len(region) > 1:
-            if self.abbreviate == 'first':
-                first = region[0][0] + '.'
-                return ' '.join([first] + region[1:])
-            elif self.abbreviate == 'initials':
-                initials = '.'.join(reg[0] for reg in region) + '.'
-                return initials
+        if us.states.lookup(region):
+            return us.states.lookup(region).abbr
         else:
-            return region[0][:2]
+            region = region.split(' ')            
+            if len(region) > 1:
+                if self.abbreviate == 'first':
+                    first = region[0][0] + '.'
+                    return ' '.join([first] + region[1:])
+                elif self.abbreviate == 'initials':
+                    initials = '.'.join(reg[0] for reg in region) + '.'
+                    return initials
+            else:
+                return region[0][:2]
 
     def _earlier_is_better(self, series, scale_factor=1):
         """

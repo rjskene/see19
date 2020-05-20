@@ -66,6 +66,7 @@ class BaseChart:
             'cases_new_dma_per_person_per_land_KM2': 'Daily Cases / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
             'cases_new_dma_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
             'tests_new_dma_per_1M': 'Daily Tests per 1M ({}DMA)'.format(self.count_dma),
+            'tests_per_1M': 'Total Tests per 1M',
             'temp': 'Temperature ({}{})'.format(self.degrees, self.temp_scale),
             'dewpoint': 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale),
             'uvb': 'UV-B Radiation in J / M\u00b2',
@@ -858,6 +859,7 @@ class BarCharts(BaseChart):
         last_counts = self._casestudy.COUNT_TYPES + [a + b for a in self._casestudy.COUNT_TYPES for b in self._casestudy.PER_APPENDS]
         max_counts = [a + '_new_dma' + b for a in self._casestudy.COUNT_TYPES for b in self._casestudy.PER_APPENDS]
         max_counts += ['uvb_dma', 'temp_dma']
+        max_counts += ['cases' + a + '_per_test' + a for a in self._casestudy.COUNT_APPENDS]
         max_counts += [a + b for a in self._casestudy.STRINDEX_CATS for b in ['', '_dma']]
         mobi_counts = [a + b for a in self._casestudy.mobi_dmas.keys() for b in ['', '_dma']]
         
