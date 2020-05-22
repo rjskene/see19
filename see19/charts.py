@@ -196,7 +196,7 @@ class CompChart2D(BaseChart):
             multiline_labels=True, label_offsets={}, fs_labels=8, 
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
-            fs_xticks=16, fs_yticks=16, 
+            fs_xticks=16, fs_yticks=16, fs_overlay=10,
             fs_legend=8, h_legend=20, w_legend=20,
             width=750, height=500, base_inc=.25,
             save_file=False, filename=None, annotations=[],
@@ -333,7 +333,7 @@ class CompChart2D(BaseChart):
                 
             data2 = {'x': overlay_days, 'y': overlay_by_region, 'color': palette[:-1]}
             source2 = ColumnDataSource(data=data2)
-            start = min(olay for region in overlay_by_region for olay in region) * 1.5
+            start = min(olay for region in overlay_by_region for olay in region) * 0.8
             end = max(olay for region in overlay_by_region for olay in region) * 1.1
             p.extra_y_ranges = {overlay: Range1d(start=start, end=end)}
             p.multi_line(xs='x', ys='y', line_color='red', line_width=4, source=source2,
@@ -341,7 +341,7 @@ class CompChart2D(BaseChart):
             )
 
             right_axis_label = self.labels[overlay]
-            p.add_layout(LinearAxis(y_range_name='{}'.format(overlay), axis_label=right_axis_label), 'right')
+            p.add_layout(LinearAxis(y_range_name='{}'.format(overlay), axis_label=right_axis_label, axis_label_text_font_size=str(fs_overlay) + 'pt'), 'right')
 
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None
@@ -977,7 +977,7 @@ class ScatterFlow(BaseChart):
 
         return xs, ys, zs
 
-    def make(self, regions=[],
+    def make(self, regions=[], title='',
         y_title=1.1, fs_title=20,
         fs_subtitle=10, fs_xlabel=16, fs_ylabel=16,
         fs_clabel=10, fs_legend=12, pad_clabel=10,
@@ -1091,11 +1091,10 @@ class ScatterFlow(BaseChart):
         cax.yaxis.set_ticks_position(cb_ticks_pos)
         cax.yaxis.set_label_position(cb_label_pos)
         
-        
         ax = fig.add_subplot(111, frameon=False)
         plt.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off', length=0)
-        ax.set_title('Quarantine Evolution: Change in Oxford Stringency Policy Indicators', fontsize=fs_title, y=y_title)
-        ax.set_xlabel('Days Since January 1', labelpad=20, fontsize=fs_xlabel)
+        ax.set_title(title, fontsize=fs_title, y=y_title)
+        ax.set_xlabel('days_' + self.labels[self.start_factor], labelpad=20, fontsize=fs_xlabel)
         ax.set_facecolor('#048ba8')
         
         plt.subplots_adjust(left=.1, bottom=.1, right=1, top=1, wspace=0.2, hspace=0.22)
@@ -1106,54 +1105,61 @@ class ScatterFlow(BaseChart):
         return plt
 
     def make_race(self, 
-        indicator=None, make_sum=[], regions=[],
+        comp_category=None, make_sum=[], regions=[],
+        marker='s', ms=100,
         title='', y_title=1.02, ylabel='',
         fs_title=16, fs_ylabel=12, fs_xlabel=14, fs_clabel=10, 
+        fs_yticks=8,
         pad_xlabel=10, pad_ylabel=10, pad_clabel=10, 
-        width=8, height=6, xy_cbar=(0,0),
-        annotations=[],
+        width=8, height=6, xy_cbar=(0,0), h_cbar=1, w_cbar=.3,
+        annotations=[], abbreviate=False,
         save_file=False, filename='',
     ):
         regions = regions if regions else self.regions
+        regions = sorted(regions, reverse=True)
         df = self.df.copy(deep=True)
+        df = df[df[comp_category].notna()]
         
         if make_sum:
-            if indicator:
-                raise AttributeError("You cannot provide indicator with make_sum")
+            if comp_category:
+                raise AttributeError("You cannot provide comp_category with make_sum")
             else:
                 df['make_sum'] = df[make_sum].sum(axis=1)
-                indicator = 'make_sum'
+                comp_category = 'make_sum'
 
-        df = df[['date', 'region_name', 'days', indicator]]
+        df = df[['date', 'region_name', 'days', comp_category]]
         df = df[df.region_name.isin(regions)]
-        min_days = np.array([df_group.days.max() for i, df_group in df.groupby('region_name')]).min()
-        df = df[df.days <= min_days]
+    
+        max_days = np.array([df_group.days.max() for i, df_group in df.groupby('region_name')]).min()
+        min_days = np.array([df_group.days.min() for i, df_group in df.groupby('region_name')]).max()
+        df = df[(df.days <= max_days) & (df.days >= min_days)]
 
         xs = np.repeat(df.days.dt.days, np.array(regions).shape[0])
 
         region_keys = np.arange(1, len(regions) + 1)
         ys = np.tile(region_keys, len(df.days))
         regions_key = {tup[0]: tup[1] for tup in zip(region_keys, regions)}
-        
+        df = df.sort_values(by=['region_name', 'days'])
+
         zs = []
         for x in df.days:
             counts = []
             for y in region_keys:
-                count = df[(df.days == x) & (df.region_name == regions_key[y])][indicator].iloc[0]
+                count = df[(df.days == x) & (df.region_name == regions_key[y])][comp_category].iloc[0]
                 counts.append(count)
             zs.append(counts)
         zs = np.array(zs).flatten()
-
+        
         fig, ax = plt.subplots(figsize=(width, height))
-        cmap = plt.cm.get_cmap('RdPu')
+        cmap = plt.cm.get_cmap('Blues')
 
-        sc = ax.scatter(xs, ys, c=zs, vmin=zs.min(), vmax=zs.max(), cmap=cmap)
-
+        sc = ax.scatter(xs, ys, marker=marker, s=ms, c=zs, vmin=zs.min(), vmax=zs.max()*0.7, cmap=cmap)
+        
         cax = inset_axes(ax,
             width='6%',
-            height='50%',
+            height='30%',
             loc='lower right',
-            bbox_to_anchor=(*xy_cbar, .3, 1),
+            bbox_to_anchor=(*xy_cbar, w_cbar, h_cbar),
             bbox_transform=ax.transAxes,
             borderpad=0,
         )
@@ -1161,16 +1167,18 @@ class ScatterFlow(BaseChart):
             sc, extend='both', 
             cax=cax, orientation='vertical',
         )
-        cb.set_label('Score', labelpad=pad_clabel, fontsize=fs_clabel)
+        cb.set_label(self.labels[comp_category], labelpad=pad_clabel, fontsize=fs_clabel)
         cax.yaxis.set_ticks_position('right')
         cax.yaxis.set_label_position('right')
 
         ax.set_title(title, fontsize=fs_title, y=y_title)
         ax.set_yticks(region_keys)
-        ax.set_yticklabels(regions_key.values())
+        
+        yticklabels = [self._casestudy._abbreviator(y) for y in regions_key.values()] if abbreviate else regions_key.values()
+        ax.set_yticklabels(yticklabels, fontsize=fs_yticks)
         ax.set_ylabel(ylabel, labelpad=pad_ylabel, fontsize=fs_ylabel)
 
-        ax.set_xlabel('Days Since January 1', labelpad=pad_xlabel, fontsize=fs_xlabel)
+        ax.set_xlabel(self.labels['days_' + self.start_factor], labelpad=pad_xlabel, fontsize=fs_xlabel)
 
         for annot in annotations:
             plt.text(*annot)
@@ -1179,4 +1187,3 @@ class ScatterFlow(BaseChart):
             plt.savefig(filename, bbox_inches='tight')
 
         return plt
-    
