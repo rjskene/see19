@@ -316,6 +316,12 @@ class CaseStudy:
         for region_id, df_group in df.groupby('region_id'):
             df_group = df_group.copy(deep=True)
 
+            # Colorado has NaN values for cases in mid April
+            # this is a hacky way to fill them
+            # this could/should be expanded to fill NaNs for other regions
+            if region_id == 63:
+                df_group.cases.interpolate(method='polynomial', order=1)
+
             for count_type in self.COUNT_TYPES:
                 df_group[count_type + '_new'] = df_group[count_type].diff()
                 df_group[count_type + '_dma'] = df_group[count_type].rolling(window=self.count_dma).mean()

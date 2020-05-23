@@ -44,6 +44,9 @@ class BaseChart:
             'population': 'Population',
             'land_dens': 'Density of Land Area',
             'city_dens': 'Population Density of Largest City',
+            'cases_dma_per_test_dma': 'Cases per Test ({}DMA)'.format(self.count_dma),
+            'cases_per_test': 'Cases per Test',
+            'cases_new_dma_per_test_new_dma': 'Daily Cases per Daily Tests ({}DMA)'.format(self.count_dma),
             'deaths': 'Cumulative Deaths',
             'deaths_new': 'Daily Fatalities',
             'deaths_new_dma_per_1M': 'Daily Fatalities per 1M ({}DMA)'.format(self.count_dma),
@@ -92,6 +95,7 @@ class BaseChart:
             'e4': 'International Support', 'h1': 'Public Information Campaigns',
             'h2': 'Testing Policy', 'h3': 'Contact Tracing',
             'h4': 'Emergency Investment in Health Care', 'h5': 'Investment in Vaccines',
+            'key3_sum': 'Sum of the Key 3 Indicators',
             'key3_sum_earlier': 'Sum of Key 3 Oxford Stingency Factor Weighted to Earlier Dates',
             'neoplasms': 'NeoPlasms Fatalities',
             'blood': 'Blood-based Fatalities',
@@ -950,9 +954,14 @@ class BarCharts(BaseChart):
                 if subtitles:
                     axs[i].set_title(self.labels[factor], fontsize=fs_subtitle)
 
+                axs[i].margins(0.01, None)
+                
+
         fig.suptitle(title, fontsize=fs_title, y=y_title)
 
         plt.subplots_adjust(hspace=0.4)
+
+        plt.axhline(y=0.1, color='red')
 
         if save_file:
             plt.savefig(filename, bbox_inches='tight')
