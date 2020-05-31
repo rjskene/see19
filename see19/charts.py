@@ -34,7 +34,6 @@ class BaseChart:
         self.count_dma = self._casestudy.count_dma
         self.temp_scale = self._casestudy.temp_scale
 
-        # Computations
         self.regions = self._casestudy.regions
         self.degrees = '\xb0' if self.temp_scale in ['C', 'F'] else ''
         
@@ -51,6 +50,8 @@ class BaseChart:
 
         # Add Manual Labels First
         self.labels = {**self.labels, **MANUAL_CHART_LABELS}
+        self.labels['temp'] = 'Temperature ({}{})'.format(self.degrees, self.temp_scale)
+        self.labels['dewpoint'] = 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale)
 
         if self.start_factor == 'date':
             self.labels = {
