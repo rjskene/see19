@@ -6,11 +6,10 @@ import us
 
 from .helpers import accept_string_or_list
 from .charts import CompChart2D, CompChart4D, HeatMap, BarCharts, ScatterFlow
-from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
+from .constants import ALL_RANGES, RANGES, GMOBIS, AMOBIS, CAUSES, MAJOR_CAUSES, \
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
-        COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, \
-        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
-        AMOBIS, COUNT_APPENDS
+        COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, COUNT_APPENDS, \
+        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
@@ -28,6 +27,7 @@ class CaseStudy:
     """
     Class for filtering the baseframe dataset, analysing, and generating graphs
     """
+    COUNTRIES_W_REGIONS = COUNTRIES_W_REGIONS
     COUNT_TYPES = COUNT_TYPES    
     BASECOUNT_CATS = BASECOUNT_CATS
     BASE_PLUS_PER_CATS = BASE_PLUS_PER_CATS
@@ -49,7 +49,7 @@ class CaseStudy:
     HEALTH_CATS = HEALTH_CATS
     KEY3_CATS = KEY3_CATS
 
-    MOBIS = MOBIS
+    GMOBIS = GMOBIS
     AMOBIS = AMOBIS
     DMA_CATS = MSMTS + POLLUTS + STRINDEX_CATS
 
@@ -112,7 +112,7 @@ class CaseStudy:
         self.causes = [factor for factor in self.factors if factor in self.CAUSES]
         self.strindex_factors = [factor for factor in self.factors if factor in self.STRINDEX_CATS]
         
-        self.mobis = [factor for factor in self.factors if factor in [*self.MOBIS, *self.AMOBIS]]
+        self.mobis = [factor for factor in self.factors if factor in [*self.GMOBIS, *self.AMOBIS]]
         self.mobi_dmas = mobi_dmas
         
         self.pop_cats = self.age_ranges + self.causes
@@ -123,7 +123,7 @@ class CaseStudy:
 
         if self.country_level and self.mobis:
                 raise AttributeError("""
-                    Google mobility factors {} are not available when country_level=True
+                    Google and Apple mobility factors {} are not available when country_level=True
                 """.format(self.mobis)
             )
         if not all(factor in self.ALLOWED_FACTORS_TO_FAVOR_EARLIER for factor in self.factors_to_favor_earlier):
@@ -231,12 +231,12 @@ class CaseStudy:
     def _agg_to_country_level(self, baseframe):
         # Different aggregation approaches for columns
         FIRST_ROW = ['travel_year', 'gdp_year', 'year', 'country', 'country_id', 'country_code']
-        SUMS = ALL_RANGES + CAUSES + ['visitors', 'gdp', 'deaths', 'cases', 'land_KM2', 'city_KM2', 'population']
-        AVERAGES = STRINDEX_CATS + MSMTS
-        EXCLUDES = POLLUTS + MOBIS
+        SUMS = self.COUNT_TYPES + ALL_RANGES + self.CAUSES + ['visitors', 'gdp', 'land_KM2', 'city_KM2', 'population']
+        AVERAGES = self.STRINDEX_CATS + self.MSMTS
+        EXCLUDES = self.POLLUTS + self.GMOBIS + self.AMOBIS
         
         # Filter baseframe
-        df_subs = baseframe[baseframe.country_code.isin(COUNTRIES_W_REGIONS)]
+        df_subs = baseframe[baseframe.country_code.isin(self.COUNTRIES_W_REGIONS)]
 
         # Loop through each country 
         dfs_country = []
@@ -265,7 +265,7 @@ class CaseStudy:
 
         df_countries = pd.concat(dfs_country)
 
-        df_nosubs = baseframe[~baseframe.country_code.isin(COUNTRIES_W_REGIONS)]
+        df_nosubs = baseframe[~baseframe.country_code.isin(self.COUNTRIES_W_REGIONS)]
 
         # Exclude values that don't aggregate across regions easily
         df_nosubs = df_nosubs.drop(EXCLUDES, axis=1)
@@ -273,10 +273,15 @@ class CaseStudy:
         return pd.concat([df_nosubs, df_countries])
 
     def _interpolate_by_region(self, df):
+        dfs = []
         for region_id, df_group in df.groupby('region_id'):
+            df_group = df_group.copy()
             for factor in self.interpolate:
-                df_group.loc[factor] = df_group.loc[factor].interpolate(**self.interpolate_method)
-
+                df_group[factor] = df_group[factor].interpolate(**self.interpolate_method)
+            dfs.append(df_group)
+              
+        df = pd.concat(dfs)
+            
         return df
 
     def _filter_baseframe(self, baseframe=None, country_level=False, world_averages=False):

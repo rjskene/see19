@@ -53,7 +53,7 @@ CUSTOM_RANGES = [custom_range for ranges in RANGES.values() for custom_range in 
 
 ALL_RANGES = AGE_COLS + CUSTOM_RANGES
 
-MOBIS = ['retail_n_rec', 'groc_n_pharm', 'parks', 'transit', 'workplaces', 'residential']
+GMOBIS = ['retail_n_rec', 'groc_n_pharm', 'parks', 'transit', 'workplaces', 'residential']
 CAUSES = [
     'neoplasms', 'blood', 'endo', 'mental', 'nervous', 'circul', 'infectious', 'respir', 
     'digest', 'skin', 'musculo', 'genito', 'childbirth', 'perinatal', 'congenital',
