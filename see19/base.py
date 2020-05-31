@@ -65,7 +65,7 @@ class CaseStudy:
         start_factor='deaths', start_hurdle=1, tail_factor='', tail_hurdle=1.2, 
         min_deaths=0, min_days_from_start=0, country_level=False, world_averages=False,
         temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[],
-        interpolate=self.COUNT_TYPES, interpolate_method={'method': 'polynomial', 'order': 2},
+        interpolate=[], interpolate_method={'method': 'polynomial', 'order': 2},
     ):
         # Base DataFrame
         self.baseframe = baseframe
@@ -87,7 +87,7 @@ class CaseStudy:
         self.excluded_countries = accept_string_or_list(excluded_countries)
                 
         # For now, Interpolate is strictly for COUNT_TYPES with NaNs
-        self.interpolate = interpolate
+        self.interpolate = self.COUNT_TYPES if not interpolate else interpolate
         self.interpolate_method = interpolate_method
 
         # Hurdles to filter data and isolate regions/timeframes most pertinent to analysis
@@ -272,10 +272,10 @@ class CaseStudy:
 
         return pd.concat([df_nosubs, df_countries])
 
-    def _interpolate(self, df):
+    def _interpolate_by_region(self, df):
         for region_id, df_group in df.groupby('region_id'):
             for factor in self.interpolate:
-                df_group[factor] = df_group[factor].interpolate(**self.interpolate_method)
+                df_group.loc[factor] = df_group.loc[factor].interpolate(**self.interpolate_method)
 
         return df
 
@@ -312,7 +312,7 @@ class CaseStudy:
         df = df[CASE_COLS + self.factors]
 
         # Interpolate NaN values for count_type totals
-        df = self.interpolate(df) if self.interpolate else df
+        df = self._interpolate_by_region(df) if self.interpolate else df
 
         """
         # Find dma for factors with timeshift
