@@ -1,30 +1,66 @@
-import requests
+import math
 import numpy as np
 import pandas as pd
+import requests
+import urllib
+from io import BytesIO
 
-from .helpers import accept_string_or_list
+import us
+
+from .helpers import accept_string_or_list, ProgressBar
 from .charts import CompChart2D, CompChart4D, HeatMap, BarCharts, ScatterFlow
-from .constants import ALL_RANGES, RANGES, MOBIS, CAUSES, MAJOR_CAUSES, \
+from .constants import ALL_RANGES, RANGES, GMOBIS, AMOBIS, CAUSES, MAJOR_CAUSES, \
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
-        COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, \
-        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS
+        COUNTRIES_W_REGIONS, COUNTRIES_W_REGIONS_LONG, COUNT_TYPES, BASE_COLS, PER_APPENDS, COUNT_APPENDS, \
+        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
+        AUSABBRS, BRAABBRS, CANABBRS, CHNABBRS, ITAABBRS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
 def get_baseframe(test=False):
+    progbar = ProgressBar()
+    counter = 0
+    progbar.clock(counter)
+
     if test:
         url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_testset.txt'
     else:
         url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
+
     page = requests.get(url)
+
+    counter += 2
+    progbar.clock(counter)
     df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)
 
-    return pd.read_csv(df_url, parse_dates=['date'])
+    counter += 4
+    progbar.clock(counter)
+    url = urllib.request.urlopen(df_url)
+
+    counter += 7
+    progbar.clock(counter)
+    lines_number = sum(1 for line in BytesIO(url.read()))
+
+    counter += 9
+    progbar.clock(counter)
+
+    lines_in_chunk = int(math.ceil(lines_number / (progbar.maxlen - counter)))
+    chunks = pd.read_csv(df_url, chunksize=lines_in_chunk)
+
+    dfs = []
+    for chunk in chunks:
+        counter += 1
+        progbar.clock(counter)
+        dfs.append(chunk)
+
+    return pd.concat(dfs)
 
 class CaseStudy:
     """
     Class for filtering the baseframe dataset, analysing, and generating graphs
     """
+    COUNTRIES_W_REGIONS = COUNTRIES_W_REGIONS
+    COUNTRIES_W_REGIONS_LONG = COUNTRIES_W_REGIONS_LONG
     COUNT_TYPES = COUNT_TYPES    
     BASECOUNT_CATS = BASECOUNT_CATS
     BASE_PLUS_PER_CATS = BASE_PLUS_PER_CATS
@@ -46,10 +82,13 @@ class CaseStudy:
     HEALTH_CATS = HEALTH_CATS
     KEY3_CATS = KEY3_CATS
 
-    MOBIS = MOBIS
+    GMOBIS = GMOBIS
+    AMOBIS = AMOBIS
     DMA_CATS = MSMTS + POLLUTS + STRINDEX_CATS
 
     PER_APPENDS = PER_APPENDS
+    COUNT_APPENDS = COUNT_APPENDS
+
     ALLOWED_FACTORS_TO_FAVOR_EARLIER = ['key3_sum', 'h_sum', 'e_sum', 'c_sum'] + STRINDEX_CATS
     
     def __init__(
@@ -58,7 +97,8 @@ class CaseStudy:
         factor_dmas={}, mobi_dmas={},
         start_factor='deaths', start_hurdle=1, tail_factor='', tail_hurdle=1.2, 
         min_deaths=0, min_days_from_start=0, country_level=False, world_averages=False,
-        temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[]
+        temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[],
+        interpolate=[], interpolate_method={'method': 'polynomial', 'order': 2},
     ):
         # Base DataFrame
         self.baseframe = baseframe
@@ -79,6 +119,10 @@ class CaseStudy:
         self.excluded_regions = accept_string_or_list(excluded_regions)
         self.excluded_countries = accept_string_or_list(excluded_countries)
                 
+        # For now, Interpolate is strictly for COUNT_TYPES with NaNs
+        self.interpolate = self.COUNT_TYPES if not interpolate else interpolate
+        self.interpolate_method = interpolate_method
+
         # Hurdles to filter data and isolate regions/timeframes most pertinent to analysis
         self.min_deaths = min_deaths
         self.start_hurdle = start_hurdle
@@ -101,7 +145,7 @@ class CaseStudy:
         self.causes = [factor for factor in self.factors if factor in self.CAUSES]
         self.strindex_factors = [factor for factor in self.factors if factor in self.STRINDEX_CATS]
         
-        self.mobis = [factor for factor in self.factors if factor in self.MOBIS]
+        self.mobis = [factor for factor in self.factors if factor in [*self.GMOBIS, *self.AMOBIS]]
         self.mobi_dmas = mobi_dmas
         
         self.pop_cats = self.age_ranges + self.causes
@@ -110,11 +154,19 @@ class CaseStudy:
         if 'gdp' in factors:
             self.pop_cats.append('gdp')
 
-        if self.country_level and self.mobis:
+        if self.country_level:
+            if self.mobis:
                 raise AttributeError("""
-                    Google mobility factors {} are not available when country_level=True
+                    Google and Apple mobility factors {} are not available when country_level=True
                 """.format(self.mobis)
             )
+        else:
+            countries_w_regions = [region for region in self.regions if region in self.COUNTRIES_W_REGIONS + self.COUNTRIES_W_REGIONS_LONG]
+            if countries_w_regions:
+                raise AttributeError(""""
+                    {} ha{} subregions. To treat aggregate the country data, set `country_level=True` 
+                """.format(', '.join(countries_w_regions), 's' if len(countries_w_regions) == 1 else 've'))
+
         if not all(factor in self.ALLOWED_FACTORS_TO_FAVOR_EARLIER for factor in self.factors_to_favor_earlier):
             raise AttributeError("""
                 Only the following categories can included in factors_to_favor_earlier: {}
@@ -132,7 +184,9 @@ class CaseStudy:
                     DMA or growth not available for {}. Only available for {}.
                 """.format(' ,'.join(dma_not_available, ' ,'.join(self.DMA_CATS))))
         
-        self.abbreviate = 'initials'
+        ### ELIMATE THE GEORGIA COLLISION; GA, USA and the country/region Georgia
+        if any(usa in self.countries for usa in ['USA', 'United State of America (the']) and 'Georgia' not in self.countries:
+            self.excluded_countries += ['Georgia']
 
         self.df = self._filter_baseframe()
         
@@ -148,12 +202,10 @@ class CaseStudy:
         """
         Parameter
         _________
-        
         date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
 
         Returns 
         ________
-
         type float, total global cases as of specified date
         """
         baseframe = self.baseframe.copy(deep=True)
@@ -166,12 +218,10 @@ class CaseStudy:
         """
         Parameter
         _________
-        
         date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
 
         Returns 
         ________
-
         type float, total global fatalities as of specified date
         """
         baseframe = self.baseframe.copy(deep=True)
@@ -179,25 +229,6 @@ class CaseStudy:
             baseframe = baseframe[baseframe.region_name.isin(regions)]
         
         return baseframe[baseframe.date == date].deaths.sum()
-
-    def _abbreviator(self, region, abbreviate=None):
-        """
-        Used to abbreviate region names
-
-        available abbreviate option:
-            'initials': finds initials 
-        """
-        abbreviate = abbreviate if abbreviate else self.abbreviate
-        region = region.split(' ')
-        if len(region) > 1:
-            if self.abbreviate == 'first':
-                first = region[0][0] + '.'
-                return ' '.join([first] + region[1:])
-            elif self.abbreviate == 'initials':
-                initials = '.'.join(reg[0] for reg in region) + '.'
-                return initials
-        else:
-            return region[0][:2]
 
     def _earlier_is_better(self, series, scale_factor=1):
         """
@@ -216,24 +247,25 @@ class CaseStudy:
     def _agg_to_country_level(self, baseframe):
         # Different aggregation approaches for columns
         FIRST_ROW = ['travel_year', 'gdp_year', 'year', 'country', 'country_id', 'country_code']
-        SUMS = ALL_RANGES + CAUSES + ['visitors', 'gdp', 'deaths', 'cases', 'land_KM2', 'city_KM2', 'population']
-        AVERAGES = STRINDEX_CATS + MSMTS
-        EXCLUDES = POLLUTS + MOBIS
+        SUMS = self.COUNT_TYPES + ALL_RANGES + self.CAUSES + ['visitors', 'gdp', 'land_KM2', 'city_KM2', 'population']
+        AVERAGES = self.STRINDEX_CATS + self.MSMTS
+        EXCLUDES = self.POLLUTS + self.GMOBIS + self.AMOBIS
         
         # Filter baseframe
-        df_subs = baseframe[baseframe.country_code.isin(COUNTRIES_W_REGIONS)]
+        df_subs = baseframe[baseframe.country_code.isin(self.COUNTRIES_W_REGIONS)]
 
         # Loop through each country 
         dfs_country = []
         for code, df_group in df_subs.groupby('country_code'):
-            region_id = 'reg_for_' + code
-            region_name = df_group.iloc[0]['country']
+            region_id = 'id_for_' + code
+            region_name = 'name_for_' + code
+            region_code = code
             country_dict = df_group.iloc[0][FIRST_ROW]
 
             # Group each country frame by date, then aggregate column values on the date
             country_dicts = []
             for date, df_date in df_group.groupby('date'):
-                country_dict = {'region_id': region_id, 'region_name': region_name, **country_dict}
+                country_dict = {'region_id': region_id, 'region_code':region_code, 'region_name': region_name, **country_dict}
                 country_dict['date'] = date
 
                 for sum_ in SUMS:
@@ -247,15 +279,27 @@ class CaseStudy:
             
             df_country = pd.DataFrame(country_dicts)
             dfs_country.append(df_country)
-
+            
         df_countries = pd.concat(dfs_country)
 
-        df_nosubs = baseframe[~baseframe.country_code.isin(COUNTRIES_W_REGIONS)]
+        df_nosubs = baseframe[~baseframe.country_code.isin(self.COUNTRIES_W_REGIONS)]
 
         # Exclude values that don't aggregate across regions easily
         df_nosubs = df_nosubs.drop(EXCLUDES, axis=1)
 
         return pd.concat([df_nosubs, df_countries])
+
+    def _interpolate_by_region(self, df):
+        dfs = []
+        for region_id, df_group in df.groupby('region_id'):
+            df_group = df_group.copy()
+            for factor in self.interpolate:
+                df_group[factor] = df_group[factor].interpolate(**self.interpolate_method)
+            dfs.append(df_group)
+              
+        df = pd.concat(dfs)
+            
+        return df
 
     def _filter_baseframe(self, baseframe=None, country_level=False, world_averages=False):
         """
@@ -269,18 +313,34 @@ class CaseStudy:
 
         if self.country_level or country_level:
             df = self._agg_to_country_level(df)
-        
+
         if self.regions:
-            df = df[df['region_name'].isin(self.regions)]
+            df = df[
+                df['region_name'].isin(self.regions) |
+                df['region_id'].isin(self.regions) |
+                df['region_code'].isin(self.regions)
+            ]
         
         if self.countries:    
-            df = df[df['country'].isin(self.countries)]            
+            df = df[
+                df['country'].isin(self.countries) | 
+                df['country_code'].isin(self.countries) |
+                df['country_id'].isin(self.countries)
+            ]
         
         if self.excluded_regions:
-            df = df[~df['region_name'].isin(self.excluded_regions)]
+            df = df[~(
+                df['region_name'].isin(self.excluded_regions) |
+                df['region_id'].isin(self.excluded_regions) |
+                df['region_code'].isin(self.excluded_regions)
+            )]
         
         if self.excluded_countries:
-            df = df[~df['country'].isin(self.excluded_countries)]            
+            df = df[~(
+                df['country'].isin(self.excluded_countries) | 
+                df['country_code'].isin(self.excluded_countries) |
+                df['country_id'].isin(self.excluded_countries)
+            )]            
 
         # Reset regions attribute so that it reflects
         # the actual remaining region in the dataframe        
@@ -288,6 +348,9 @@ class CaseStudy:
 
         # Shrink DF to include only columns for factors in focus
         df = df[CASE_COLS + self.factors]
+
+        # Interpolate NaN values for count_type totals
+        df = self._interpolate_by_region(df) if self.interpolate else df
 
         """
         # Find dma for factors with timeshift
@@ -310,7 +373,12 @@ class CaseStudy:
                 df_group[count_type + '_new'] = df_group[count_type].diff()
                 df_group[count_type + '_dma'] = df_group[count_type].rolling(window=self.count_dma).mean()
                 df_group[count_type + '_new_dma'] = df_group[count_type + '_new'].rolling(window=self.count_dma).mean()
-            
+
+            df_group['cases_per_test'] = df_group['cases'] / df_group['tests']
+            df_group['tests_per_case'] = df_group['tests'] / df_group['cases']
+            for append in self.COUNT_APPENDS:
+                df_group['cases{}_per_test{}'.format(append, append)] = df_group['cases{}'.format(append)] / df_group['tests{}'.format(append)]
+
             for count_cat in self.BASECOUNT_CATS:
                 df_group[count_cat + '_per_1M'] = df_group[count_cat] / df_group['population'] * 1000000
                 df_group[count_cat + '_per_person_per_land_KM2'] = df_group[count_cat] / (df_group['land_dens'])
@@ -419,10 +487,10 @@ class CaseStudy:
         if self.world_averages or world_averages:
             globe_rows = []
             for date, df_date in df.groupby('date'):
-                globe_row = ['REG_FOR_WORLD_AVGS', 'COUNTRY_FOR_WORLD_AVGS', 'WorldAvg', 'WLDAVG', 'WorldAvg'] 
+                globe_row = ['REDID_FOR_WORLD_AVGS', 'COUNTRY_FOR_WORLD_AVGS', 'AVG', 'WorldAvg', 'WLDAVG', 'WorldAvg'] 
                 globe_row += [date]
 
-                df_date = df_date[[col for col in df_date.columns if col not in ['region_id', 'country_id', 'region_name', 'country_code', 'country', 'date']]]
+                df_date = df_date[[col for col in df_date.columns if col not in ['region_id', 'country_id', 'region_code', 'region_name','country_code', 'country', 'date']]]
                 globe_row += df_date.mean().tolist()
                 
                 globe_row = [round(i, 2) if isinstance(i, float) else i for i in globe_row]

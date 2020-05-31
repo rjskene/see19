@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from .helpers import accept_string_or_list
-from .constants import META_COLS, COVID_DRAGONS
+from .constants import META_COLS, MANUAL_CHART_LABELS
 
 class BaseChart:
     """
@@ -34,78 +34,25 @@ class BaseChart:
         self.count_dma = self._casestudy.count_dma
         self.temp_scale = self._casestudy.temp_scale
 
-        # Computations
         self.regions = self._casestudy.regions
-        
         self.degrees = '\xb0' if self.temp_scale in ['C', 'F'] else ''
-            
-        self.labels = {
-            '': 'January 2020',
-            'population': 'Population',
-            'land_dens': 'Density of Land Area',
-            'city_dens': 'Population Density of Largest City',
-            'deaths': 'Cumulative Deaths',
-            'deaths_new': 'Daily Fatalities',
-            'deaths_new_dma_per_1M': 'Daily Fatalities per 1M ({}DMA)'.format(self.count_dma),
-            'deaths_per_1M': 'Cumulative Fatalities per 1M',
-            'deaths_new_per_1M': 'Daily Fatalities per 1M',
-            'deaths_new_dma_per_1M_lognat':  'Daily Fatalities per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'deaths_new_dma_per_person_per_land_KM2': 'Daily Fatalities / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'deaths_new_dma_per_person_per_city_KM2': 'Daily Fatalities / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'deaths_new_dma_per_person_per_land_KM2_lognat': 'Daily Fatalities / Person / Land KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'deaths_new_dma_per_person_per_city_KM2_lognat': 'Daily Fatalities / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'deaths_per_person_per_land_KM2': 'Total Fatalities / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'deaths_per_person_per_city_KM2': 'Total Fatalities / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'cases': 'Cumulative Cases',
-            'cases_per_1M': 'Cumulative Cases per 1M',
-            'cases_new_per_1M': 'Daily Cases per 1M',
-            'cases_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2\n(Natural Log)',
-            'cases_new_dma_per_1M': 'Daily Cases per 1M ({}DMA)'.format(self.count_dma),
-            'cases_new_dma_per_1M_lognat': 'Daily Cases per 1M ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'cases_new_dma_per_person_per_city_KM2': 'Daily Cases / Person / City KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'cases_new_dma_per_person_per_land_KM2': 'Daily Cases / Person / Land KM\u00b2 ({}DMA)'.format(self.count_dma),
-            'cases_new_dma_per_person_per_city_KM2_lognat': 'Total Cases / Person / City KM\u00b2 ({}DMA)\n(Natural Log)'.format(self.count_dma),
-            'temp': 'Temperature ({}{})'.format(self.degrees, self.temp_scale),
-            'dewpoint': 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale),
-            'uvb': 'UV-B Radiation in J / M\u00b2',
-            'rhum': 'Relative Humidity',
-            'strindex': 'Oxford Stringency Index',
-            'visitors': 'Annual Visitors',
-            'visitors_%': 'Annual Visitors as % of Population',
-            'gdp': 'Gross Domestic Product',
-            'gdp_%': 'Gross Domestic Product per Capita',
-            'retail_n_rec': 'Change in Retail n Recreation Mobility',
-            'transit': 'Change in Transit Mobility',
-            'workplaces': 'Change in WorkPlace Mobility',
-            'residential': 'Change in Residential Mobility',
-            'parks': 'Change in Parks Mobility',
-            'groc_n_pharm': 'Change in Grocery & Pharmacy Mobility',
-            'c1': 'School Closing', 'c2': 'Workplace Closing', 'c3': 'Cancel Public Events',
-            'c4': 'Restrictions on Gatherings', 'c5': 'Close Public Transport', 'c6': 'Stay-at-Home Requirements',
-            'c7': 'Restrictions on Internal Movement', 'c8': 'International Travel Controls',
-            'e1': 'Income Support', 'e2': 'Debt / Contract Relief', 'e3': 'Fiscal Measures',
-            'e4': 'International Support', 'h1': 'Public Information Campaigns',
-            'h2': 'Testing Policy', 'h3': 'Contact Tracing',
-            'h4': 'Emergency Investment in Health Care', 'h5': 'Investment in Vaccines',
-            'key3_sum_earlier': 'Sum of Key 3 Oxford Stingency Factor Weighted to Earlier Dates',
-            'neoplasms': 'NeoPlasms Fatalities',
-            'blood': 'Blood-based Fatalities',
-            'endo': 'Endocrine Fatalities',
-            'mental': 'Mental Fatalities',
-            'nervous': 'Nervous System Fatalities',
-            'circul': 'Circulatory Fatalities',
-            'infectious': 'Infectious Fatalities',
-            'respir': 'Respiratory Fatalities',
-            'digest': 'Digestive Fatalities',
-            'skin': 'Skin-related Fatalities',
-            'musculo': 'Musculo-skeletal Fatalities',
-            'genito': 'Genitourinary Fatalities',
-            'childbirth': 'Maternal and Childbirth Fatalities',
-            'perinatal': 'Perinatal Fatalities',
-            'congenital': 'Congenital Fatalities',
-            'other': 'Other Fatalities',
-            'external': 'External Fatalities'
-        }
+        
+        self.make_labels()
+
+    def make_labels(self):
+        """
+        One big ugly label maker for all the elements of the dataset
+        That can be used in the charts
+        """
+        # Next, Make Basic Labels for Count Types
+        for cat in self._casestudy.ALL_COUNT_CATS:
+            self.labels[cat] = self._count_type_label_maker(cat)
+
+        # Add Manual Labels First
+        self.labels = {**self.labels, **MANUAL_CHART_LABELS}
+        self.labels['temp'] = 'Temperature ({}{})'.format(self.degrees, self.temp_scale)
+        self.labels['dewpoint'] = 'Dewpoint ({}{})'.format(self.degrees, self.temp_scale)
+
         if self.start_factor == 'date':
             self.labels = {
                 **self.labels,
@@ -128,7 +75,17 @@ class BaseChart:
                 self.labels[factor + '_dma'] = self.labels[factor] + ' {}DMA'.format(dma)
         if self._casestudy.causes:
             self.labels = {**self.labels, **{cause + '_%': self._cause_of_death_label_maker(cause) for cause in self._casestudy.causes}}
+
+    def _count_type_label_maker(self, cat):
+        factor_split = cat.split('_')
+        start = 'Daily' if 'new' in cat else 'Cumulative'
+        per1M = ' per 1M' if '1M' in cat else ''
+        density = ' / Person / {} KM\u00b2'.format('Land' if 'land_KM2' in cat else 'City') if 'KM2' in cat else ''
+        dma = ' ({}DMA)'.format(self.count_dma) if 'dma' in cat else ''
+        lognat = '\n(Natural Log)' if 'lognat' in cat else ''
         
+        return '{} {}{}{}{}{}'.format(start, factor_split[0].capitalize(), per1M, density, dma, lognat)       
+    
     def _age_range_label_maker(self, age_range):
         if '_' in age_range:
             return '% of Population Between ' + age_range[1:3] + ' & ' + age_range[-3:-1]
@@ -191,7 +148,8 @@ class CompChart2D(BaseChart):
             multiline_labels=True, label_offsets={}, fs_labels=8, 
             legend=False, legend_location='top_right',
             x_fontsize=10, y_fontsize=10,
-            fs_xticks=16, fs_yticks=16, fs_legend=8,
+            fs_xticks=16, fs_yticks=16, fs_overlay=10,
+            fs_legend=8, h_legend=20, w_legend=20,
             width=750, height=500, base_inc=.25,
             save_file=False, filename=None, annotations=[],
             bg_color='white', bg_alpha=1, border_color='white', border_alpha=1,
@@ -216,7 +174,6 @@ class CompChart2D(BaseChart):
 
         # Set chart attributes
         fs_labels = str(fs_labels) + 'pt'
-        last_date = self.df_comp.iloc[-1]['date'].strftime('%B %d')
         min_y = self.df_comp[comp_category].min()
         min_y += min_y * .01
         max_y = self.df_comp[comp_category].max()
@@ -292,11 +249,17 @@ class CompChart2D(BaseChart):
 
         if legend_title:
             p.legend.title = 'Region: Start Date'
+
         p.legend.location = legend_location
         p.legend.border_line_color = 'black'
+        p.legend.glyph_height = h_legend
+        p.legend.glyph_width = w_legend
+        p.legend.label_height = h_legend
+        p.legend.label_width = h_legend
 
         p.legend.label_text_font_size = str(fs_legend) + 'pt'
         p.legend.background_fill_alpha = 0.0
+        p.legend.border_line_alpha = 0.0
 
         p.xaxis.axis_label = self.labels['days_' + self.start_factor]
         p.xaxis.axis_label_text_font_size = str(x_fontsize) + 'pt'
@@ -321,15 +284,15 @@ class CompChart2D(BaseChart):
                 
             data2 = {'x': overlay_days, 'y': overlay_by_region, 'color': palette[:-1]}
             source2 = ColumnDataSource(data=data2)
-            start = min(olay for region in overlay_by_region for olay in region) * 1.5
+            start = min(olay for region in overlay_by_region for olay in region) * 0.8
             end = max(olay for region in overlay_by_region for olay in region) * 1.1
             p.extra_y_ranges = {overlay: Range1d(start=start, end=end)}
-            p.multi_line(xs='x', ys='y', line_color='red', line_width=4, source=source2,
+            p.multi_line(xs='x', ys='y', line_color='color', line_width=4, source=source2,
                       y_range_name=overlay, alpha=.3,
             )
 
             right_axis_label = self.labels[overlay]
-            p.add_layout(LinearAxis(y_range_name='{}'.format(overlay), axis_label=right_axis_label), 'right')
+            p.add_layout(LinearAxis(y_range_name='{}'.format(overlay), axis_label=right_axis_label, axis_label_text_font_size=str(fs_overlay) + 'pt'), 'right')
 
         p.xgrid.grid_line_color = None
         p.ygrid.grid_line_color = None
@@ -397,7 +360,7 @@ class CompChart4D(BaseChart):
         if self.color_factor:
             cols_to_keep += [self.color_factor] 
         
-        df = df[['region_id', 'region_name', 'country', 'date', 'days'] + cols_to_keep]
+        df = df[['region_id', 'region_name', 'region_code', 'country', 'date', 'days'] + cols_to_keep]
         df = df.dropna()
         
         dfs = []
@@ -410,15 +373,11 @@ class CompChart4D(BaseChart):
         
         df = pd.concat(dfs) if dfs else df
 
-        self.region_names = list(df.sort_values(rank_category, ascending=False)['region_name'].unique())[:comp_size]
-        reg_cats = {region: i + 1 for i, region in enumerate(self.region_names)}
-
-        df = df[df['region_name'].isin(self.region_names)].copy(deep=True)
-        df['region_name'] = df['region_name'].astype('category')
-        df['region_name'].cat.set_categories(self.region_names, inplace=True)
+        self.region_names = df.sort_values(rank_category, ascending=False)['region_name'].unique()[:comp_size]
+        df = df[df.region_name.isin(self.region_names)].copy(deep=True)
+        
+        df.region_name = pd.Categorical(df.region_name, self.region_names)
         df = df.sort_values(by=['region_name', 'date'])
-        df['region_code'] = [reg_cats[region_name] for region_name in df['region_name'].values]
-    
         return df
     
     def _grey_maker(self, rgb_value):
@@ -436,17 +395,18 @@ class CompChart4D(BaseChart):
             x_datetitle=0, y_datetitle=0, fs_datetitle=14, rot_datetitle=-10.6,
             palette_base='coolwarm', color_interval=(), bar_color='orange',
             x_colorbar=0.2, y_colorbar=-.05, h_colorbar=.3, w_colorbar=.01, a_colorbar= 'vertical',
+            lp_colorbar=0,
             grid_grey= 87, pane_grey=200, tick_grey=30,
-            abbreviate=True,
             zaxis_left=False, gridlines=True, tight=True,
             width=16, height=8, save_file=False, filename=''
         ):
         # Create `make` specific dataframe
+        
         self.df_4d = self.df[self.df[comp_category].notna()].copy(deep=True)
 
         # Update Object instance for new attributes if provided
         if regions:
-            regions = [regions] if isinstance(regions, str) else regions
+            regions = accept_string_or_list(regions)
             self.df_4d = self.df_4d[self.df_4d['region_name'].isin(regions)]
         else:
             regions = self.regions
@@ -460,16 +420,12 @@ class CompChart4D(BaseChart):
         
         # Prep data for 4d
         self.df_4d = self._data_morph_for_bar4d()
-
-        last_date = self.df.iloc[-1]['date'].strftime('%B %d')
-        title = 'Comparison of Daily Fatalities as of {}'.format(last_date) if not title else title
-
         """
         ### Create Base Grid and variables for building the plot manually ###
         """        
-        x_length = len(self.region_names)    
+        x_length = self.df_4d.region_name.unique().shape[0]
         y_length = self.df_4d['days'].max().days + 1
-    
+        
         Y, X = np.mgrid[:y_length, :x_length]
         grid = np.array([X, Y])
         (dx,), (dy,) = 0.8*np.diff(X[0,:2]), 0.8*np.diff(Y[:2,0])
@@ -478,7 +434,7 @@ class CompChart4D(BaseChart):
         # both zarray and farray must be padded to much the size of the 2d x & y arrays
         zarrays = []
         farrays = []
-        for i, group in self.df_4d.groupby('region_code'):
+        for i, group in self.df_4d.groupby('region_name', observed=True):
             len_array = len(group[comp_category].values)
             end_pad = y_length - len_array
             padded_zarray = np.pad(group[comp_category].values, (0, end_pad), 'constant', )
@@ -494,11 +450,10 @@ class CompChart4D(BaseChart):
 
         Z = np.stack((zarrays)).T
         M = np.stack((farrays)).T if farrays else np.full_like(Z, -2)
+        """
+        ### Instantiate the  plot ###
+        """
         
-        """
-        ### Instantiate the plot ###
-        """
-
         # Main Plot
         fig = plt.figure(figsize=(width, height))
         ax1 = plt.subplot(projection='3d')    
@@ -528,8 +483,8 @@ class CompChart4D(BaseChart):
                 'size': 14,
             }
 
-            cb.set_label(label=self.labels[self.color_factor], labelpad=cb_labelpad, color=tick_rgba, fontdict=font)
-
+            cb.set_label(label=self.labels[self.color_factor], labelpad=lp_colorbar, color=tick_rgba, fontdict=font)
+        
         # Establish plot visual characteristics
         xyz = np.array(self._sph2cart(*self._sphview(ax1)), ndmin=3).T       #camera position in xyz
         zo = np.multiply([X, Y, np.zeros_like(Z)], xyz).sum(0)  #"distance" of each bar from camera
@@ -561,19 +516,20 @@ class CompChart4D(BaseChart):
         
         # Set ticklabels
         # If labels close to end of axis, truncate their names to fit in image
+        region_codes = self.df_4d.region_code.unique()
         if x_ticks:
-            xticklabels = [self._casestudy._abbreviator(region) if abbreviate else region for region in self.region_names]
+            xticklabels = [code for code in region_codes]
             for i in range(1, 7):
                 if len(xticklabels[-i]) > 7:
                     xticklabels[-i] = xticklabels[-i][:6] + '.'
-            ax1.set_xticks(np.arange(len(self.region_names)))
+            ax1.set_xticks(np.arange(len(region_codes)))
             ax1.set_xticklabels(xticklabels, rotation=50, fontdict=xlab_font, color=tick_rgba)
         else:
             xlab_font = {
                 'weight': 'normal',
                 'size': fs_xlabel,
             }
-            xticklabels = ['' for region in self.region_names]
+            xticklabels = ['' for code in region_codes]
             ax1.set_xticklabels(xticklabels, rotation=50, fontdict=xlab_font, color=tick_rgba)
             ax1.set_xlabel('Regions', 
                 labelpad=10, fontdict=xlab_font, color=tick_rgba
@@ -847,6 +803,7 @@ class BarCharts(BaseChart):
         last_counts = self._casestudy.COUNT_TYPES + [a + b for a in self._casestudy.COUNT_TYPES for b in self._casestudy.PER_APPENDS]
         max_counts = [a + '_new_dma' + b for a in self._casestudy.COUNT_TYPES for b in self._casestudy.PER_APPENDS]
         max_counts += ['uvb_dma', 'temp_dma']
+        max_counts += ['cases' + a + '_per_test' + a for a in self._casestudy.COUNT_APPENDS]
         max_counts += [a + b for a in self._casestudy.STRINDEX_CATS for b in ['', '_dma']]
         mobi_counts = [a + b for a in self._casestudy.mobi_dmas.keys() for b in ['', '_dma']]
         
@@ -858,6 +815,7 @@ class BarCharts(BaseChart):
         for region_id, df_group in df.groupby('region_id'):
             groupdict = {}
             groupdict['region_id'] = region_id
+            groupdict['region_code'] = df_group.region_code.iloc[0]
 
             for col in df_group.columns:
                 if col in first_counts:
@@ -887,9 +845,9 @@ class BarCharts(BaseChart):
         fs_xticks=12, fs_yticks=12,
         fs_xlabel=24, fs_title=16, fs_subtitle=12,
         pad_xlabel=20, pad_ylabel=12,
-        annotations=[], hlines=[], hline_alpha=.1,
+        annotations=[], hlines={}, hline_alpha=.1,
         colors=['red', 'magenta', 'blue'],
-        abbreviate=True, sort_cols=[], feature_regions=[],
+        sort_cols=[], feature_regions=[],
         width=16, height=12, save_file=False, filename=''    
     ):
         df_bcs = self.df.copy(deep=True)
@@ -918,10 +876,10 @@ class BarCharts(BaseChart):
         fig, axs = plt.subplots(*factors.shape, figsize=(width, height))
         
         color_key = {feature: colors[0] for feature in feature_regions}
-        color_key['WorldAvg'] = colors[1]
+        
+        color_key['AVG'] = colors[1]
         c = [color_key[region] if region in color_key.keys() else colors[2] for region in self.df_bcs.columns]
-
-        x = [self._casestudy._abbreviator(region) if abbreviate else region for region in self.df_bcs.columns]
+        x = self.df_bcs.loc['region_code']
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
         for i, factor in np.ndenumerate(factors):
@@ -937,9 +895,15 @@ class BarCharts(BaseChart):
                 if subtitles:
                     axs[i].set_title(self.labels[factor], fontsize=fs_subtitle)
 
+                axs[i].margins(0.01, None)
+                
+
         fig.suptitle(title, fontsize=fs_title, y=y_title)
 
         plt.subplots_adjust(hspace=0.4)
+
+        for hline in hlines:
+            plt.axhline(y=hline['y_hline'], color=hline['color'], alpha=hline_alpha)
 
         if save_file:
             plt.savefig(filename, bbox_inches='tight')
@@ -964,7 +928,7 @@ class ScatterFlow(BaseChart):
 
         return xs, ys, zs
 
-    def make(self, regions=[],
+    def make(self, regions=[], title='',
         y_title=1.1, fs_title=20,
         fs_subtitle=10, fs_xlabel=16, fs_ylabel=16,
         fs_clabel=10, fs_legend=12, pad_clabel=10,
@@ -1009,7 +973,7 @@ class ScatterFlow(BaseChart):
         else:
             regions = np.array(regions)
         
-        fig, axs = plt.subplots(*regions.shape, figsize=(width, height), facecolor="red")
+        fig, axs = plt.subplots(*regions.shape, figsize=(width, height))
         cmap = plt.cm.get_cmap('RdPu', 4)
 
         strindex_labels = [self.labels[val] for val in self.subcats_key.values()]
@@ -1078,13 +1042,10 @@ class ScatterFlow(BaseChart):
         cax.yaxis.set_ticks_position(cb_ticks_pos)
         cax.yaxis.set_label_position(cb_label_pos)
         
-        
         ax = fig.add_subplot(111, frameon=False)
         plt.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off', length=0)
-        ax.set_title('Quarantine Evolution: Change in Oxford Stringency Policy Indicators', fontsize=fs_title, y=y_title)
-        ax.set_xlabel('Days Since January 1', labelpad=20, fontsize=fs_xlabel)
-        ax.set_facecolor('#048ba8')
-        
+        ax.set_title(title, fontsize=fs_title, y=y_title)
+        ax.set_xlabel(self.labels['days_' + self.start_factor], labelpad=20, fontsize=fs_xlabel)
         plt.subplots_adjust(left=.1, bottom=.1, right=1, top=1, wspace=0.2, hspace=0.22)
         
         if save_file:
@@ -1093,54 +1054,61 @@ class ScatterFlow(BaseChart):
         return plt
 
     def make_race(self, 
-        indicator=None, make_sum=[], regions=[],
+        comp_category=None, make_sum=[], regions=[],
+        marker='s', ms=100,
         title='', y_title=1.02, ylabel='',
         fs_title=16, fs_ylabel=12, fs_xlabel=14, fs_clabel=10, 
+        fs_yticks=8,
         pad_xlabel=10, pad_ylabel=10, pad_clabel=10, 
-        width=8, height=6, xy_cbar=(0,0),
+        width=8, height=6, xy_cbar=(0,0), h_cbar=1, w_cbar=.3,
         annotations=[],
         save_file=False, filename='',
     ):
         regions = regions if regions else self.regions
+        regions = sorted(regions, reverse=True)
         df = self.df.copy(deep=True)
         
         if make_sum:
-            if indicator:
-                raise AttributeError("You cannot provide indicator with make_sum")
+            if comp_category:
+                raise AttributeError("You cannot provide comp_category with make_sum")
             else:
                 df['make_sum'] = df[make_sum].sum(axis=1)
-                indicator = 'make_sum'
-
-        df = df[['date', 'region_name', 'days', indicator]]
+                comp_category = 'make_sum'
+        else:
+            df = df[df[comp_category].notna()]
+        df = df[['date', 'region_code', 'region_name', 'days', comp_category]]
         df = df[df.region_name.isin(regions)]
-        min_days = np.array([df_group.days.max() for i, df_group in df.groupby('region_name')]).min()
-        df = df[df.days <= min_days]
+        region_codes = df.region_code.unique()    
+        max_days = np.array([df_group.days.max() for i, df_group in df.groupby('region_name')]).min()
+        min_days = np.array([df_group.days.min() for i, df_group in df.groupby('region_name')]).max()
+        df = df[(df.days <= max_days) & (df.days >= min_days)]
 
         xs = np.repeat(df.days.dt.days, np.array(regions).shape[0])
 
-        region_keys = np.arange(1, len(regions) + 1)
+        region_keys = np.arange(1, len(region_codes) + 1)
         ys = np.tile(region_keys, len(df.days))
-        regions_key = {tup[0]: tup[1] for tup in zip(region_keys, regions)}
-        
+        regions_key = {tup[0]: tup[1] for tup in zip(region_keys, region_codes)}
+        df = df.sort_values(by=['region_name', 'days'])
+
         zs = []
         for x in df.days:
             counts = []
             for y in region_keys:
-                count = df[(df.days == x) & (df.region_name == regions_key[y])][indicator].iloc[0]
+                count = df[(df.days == x) & (df.region_code == regions_key[y])][comp_category].iloc[0]
                 counts.append(count)
             zs.append(counts)
         zs = np.array(zs).flatten()
-
+        
         fig, ax = plt.subplots(figsize=(width, height))
-        cmap = plt.cm.get_cmap('RdPu')
+        cmap = plt.cm.get_cmap('Blues')
 
-        sc = ax.scatter(xs, ys, c=zs, vmin=zs.min(), vmax=zs.max(), cmap=cmap)
-
+        sc = ax.scatter(xs, ys, marker=marker, s=ms, c=zs, vmin=zs.min(), vmax=zs.max()*0.7, cmap=cmap)
+        
         cax = inset_axes(ax,
             width='6%',
-            height='50%',
+            height='30%',
             loc='lower right',
-            bbox_to_anchor=(*xy_cbar, .3, 1),
+            bbox_to_anchor=(*xy_cbar, w_cbar, h_cbar),
             bbox_transform=ax.transAxes,
             borderpad=0,
         )
@@ -1148,16 +1116,18 @@ class ScatterFlow(BaseChart):
             sc, extend='both', 
             cax=cax, orientation='vertical',
         )
-        cb.set_label('Score', labelpad=pad_clabel, fontsize=fs_clabel)
+        cb.set_label(self.labels[comp_category], labelpad=pad_clabel, fontsize=fs_clabel)
         cax.yaxis.set_ticks_position('right')
         cax.yaxis.set_label_position('right')
 
         ax.set_title(title, fontsize=fs_title, y=y_title)
         ax.set_yticks(region_keys)
-        ax.set_yticklabels(regions_key.values())
+        
+        yticklabels = region_codes
+        ax.set_yticklabels(yticklabels, fontsize=fs_yticks)
         ax.set_ylabel(ylabel, labelpad=pad_ylabel, fontsize=fs_ylabel)
 
-        ax.set_xlabel('Days Since January 1', labelpad=pad_xlabel, fontsize=fs_xlabel)
+        ax.set_xlabel(self.labels['days_' + self.start_factor], labelpad=pad_xlabel, fontsize=fs_xlabel)
 
         for annot in annotations:
             plt.text(*annot)
@@ -1166,4 +1136,3 @@ class ScatterFlow(BaseChart):
             plt.savefig(filename, bbox_inches='tight')
 
         return plt
-    
