@@ -64,7 +64,8 @@ class CaseStudy:
         factor_dmas={}, mobi_dmas={},
         start_factor='deaths', start_hurdle=1, tail_factor='', tail_hurdle=1.2, 
         min_deaths=0, min_days_from_start=0, country_level=False, world_averages=False,
-        temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[]
+        temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[],
+        interpolate=self.COUNT_TYPES, interpolate_method={'method': 'polynomial', 'order': 2},
     ):
         # Base DataFrame
         self.baseframe = baseframe
@@ -85,6 +86,10 @@ class CaseStudy:
         self.excluded_regions = accept_string_or_list(excluded_regions)
         self.excluded_countries = accept_string_or_list(excluded_countries)
                 
+        # For now, Interpolate is strictly for COUNT_TYPES with NaNs
+        self.interpolate = interpolate
+        self.interpolate_method = interpolate_method
+
         # Hurdles to filter data and isolate regions/timeframes most pertinent to analysis
         self.min_deaths = min_deaths
         self.start_hurdle = start_hurdle
@@ -267,6 +272,13 @@ class CaseStudy:
 
         return pd.concat([df_nosubs, df_countries])
 
+    def _interpolate(self, df):
+        for region_id, df_group in df.groupby('region_id'):
+            for factor in self.interpolate:
+                df_group[factor] = df_group[factor].interpolate(**self.interpolate_method)
+
+        return df
+
     def _filter_baseframe(self, baseframe=None, country_level=False, world_averages=False):
         """
         Filters and processes the base dataframe to isolate specific data for analysis
@@ -299,6 +311,9 @@ class CaseStudy:
         # Shrink DF to include only columns for factors in focus
         df = df[CASE_COLS + self.factors]
 
+        # Interpolate NaN values for count_type totals
+        df = self.interpolate(df) if self.interpolate else df
+
         """
         # Find dma for factors with timeshift
         # This must be completed before the main loop, because the shift may look to 
@@ -315,12 +330,6 @@ class CaseStudy:
         new_dfs = []
         for region_id, df_group in df.groupby('region_id'):
             df_group = df_group.copy(deep=True)
-
-            # Colorado has NaN values for cases in mid April
-            # this is a hacky way to fill them
-            # this could/should be expanded to fill NaNs for other regions
-            if region_id == 63:
-                df_group.cases.interpolate(method='polynomial', order=1)
 
             for count_type in self.COUNT_TYPES:
                 df_group[count_type + '_new'] = df_group[count_type].diff()
