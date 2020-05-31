@@ -1,5 +1,109 @@
 COUNTRIES_W_REGIONS = ['AUS', 'BRA', 'CAN', 'CHN', 'ITA', 'USA']
+COUNTRIES_W_REGIONS_LONG = ['Australia', 'Brazil', 'Canada', 'China', 'Italy', 'United States of America (the)']
 COVID_DRAGONS = ['Hong Kong', 'Taiwan', 'Korea, South', 'Malaysia']
+
+AUSREGIONS = {
+    'ACT': 'Australian Capital Territory', 
+    'NSW': 'New South Wales', 
+    'NT': 'Northern Territory', 
+    'QLD': 'Queensland', 
+    'SA': 'South Australia', 
+    'TAS': 'Tasmania', 
+    'VIC': 'Victoria', 
+    'WA': 'Western Australia'
+}
+AUSABBRS = {AUSREGIONS[key]: key for key in AUSREGIONS.keys()}
+
+BRAREGIONS = {
+    'RO': 'Rondonia', 'AC': 'Acre', 'AM': 'Amazonas', 'RR': 'Roraima', 'TO': 'Tocantins', 'PA': 'Para', 'AP': 'Amapa',
+    'MA': 'Maranhao', 'PI': 'Piaui', 'CE': 'Ceara', 'RN': 'Rio Grande Do Norte', 
+    'PB': 'Paraiba', 'PE': 'Pernambuco', 'AL': 'Alagoas', 'SE': 'Sergipe', 'BA': 'Bahia',
+    'ES': 'Espirito Santo', 'MG': 'Minas Gerais', 'RJ': 'Rio De Janeiro', 'SP': 'Sao Paulo',
+    'PR': 'Parana', 'SC': 'Santa Catarina', 'RS': 'Rio Grande Do Sul',
+    'GO': 'Goias', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso Do Sul', 'DF': 'Distrito Federal',
+}
+BRAABBRS = {BRAREGIONS[key]: key for key in BRAREGIONS.keys()}
+
+CANREGIONS = {
+    'AB': 'Alberta', 
+    'BC': 'British Columbia', 
+    'MB': 'Manitoba', 
+    'NB': 'New Brunswick',
+    'NFLD': 'Newfoundland and Labrador', 
+    'NWT': 'Northwest Territories',
+    'NS': 'Nova Scotia', 
+    'ON': 'Ontario', 
+    'PEI': 'Prince Edward Island', 
+    'QC': 'Quebec',
+    'SASK': 'Saskatchewan', 
+    'YT': 'Yukon',
+    'NU': 'Nunavut',
+}
+CANABBRS = {CANREGIONS[key]: key for key in CANREGIONS.keys()}
+
+CHNREGIONS = {
+    'AH': 'Anhui', 
+    'BJ': 'Beijing', 
+    'CQ': 'Chongqing', 
+    'FJ': 'Fujian', 
+    'GS': 'Gansu', 
+    'GD': 'Guangdong',
+    'GX': 'Guangxi', 
+    'GZ': 'Guizhou', 
+    'HI': 'Hainan', 
+    'HE': 'Hebei', 
+    'HL': 'Heilongjiang', 
+    'HA': 'Henan',
+    'HB': 'Hubei', 
+    'HN': 'Hunan', 
+    'NM': 'Inner Mongolia', 
+    'JS': 'Jiangsu',
+    'JX': 'Jiangxi',
+    'JL': 'Jilin',
+    'LN': 'Liaoning', 
+    'MO': 'Macau', 
+    'NX': 'Ningxia', 
+    'QH': 'Qinghai', 
+    'SN': 'Shaanxi', 
+    'SD': 'Shandong',
+    'SH': 'Shanghai', 
+    'SX': 'Shanxi', 
+    'SC': 'Sichuan', 
+    'TJ': 'Tianjin', 
+    'TX': 'Tibet', 
+    'XJ': 'Xinjiang',
+    'YN': 'Yunnan', 
+    'ZJ': 'Zhejiang'
+}
+CHNABBRS = {CHNREGIONS[key]: key for key in CHNREGIONS.keys()}
+
+ITAREGIONS = {
+    'ABR': 'Abruzzo',
+    'BAS': 'Basilicata', 
+    'CAL': 'Calabria',
+    'CAM': 'Campania',
+    'EMI': 'Emilia-Romagna',
+    'FRI': 'Friuli Venezia Giulia',
+    'LAZ': 'Lazio',
+    'LIG': 'Liguria',
+    'LOM': 'Lombardia',
+    'MAR': 'Marche',
+    'MOL': 'Molise',
+    'PIE': 'Piemonte',
+    'PUG': 'Puglia',
+    'SAR': 'Sardegna',
+    'SIC': 'Sicilia',
+    'TOS': 'Toscana',
+    'TRE': 'P.A. Trento',
+    'BZ': 'P.A. Bolzano',
+    'UMB': 'Umbria',
+    'VAL': "Valle d'Aosta",
+    'VEN': 'Veneto',
+}
+ITAABBRS = {ITAREGIONS[key]: key for key in ITAREGIONS.keys()}
+SUBABBRS = {
+    'AUS': AUSABBRS, 'BRA': BRAABBRS, 'CAN': CANABBRS, 'CHN': CHNABBRS, 'ITA': ITAABBRS,
+}
 
 AGE_RANGES = [(i * 5, i * 5 + 4) for i in range(int(85 / 5))]
 AGE_COLS = ['A' + str(age_range[0]).zfill(2) + '_' + str(age_range[1]).zfill(2) + 'B' for age_range in AGE_RANGES]
@@ -91,7 +195,7 @@ BASE_PLUS_PER_CATS = BASECOUNT_CATS + PER_CATS
 LOGNAT_CATS = [cat + '_lognat' for cat in BASE_PLUS_PER_CATS]
 ALL_CATS =  BASECOUNT_CATS + PER_CATS + LOGNAT_CATS
 
-META_COLS = ['region_id', 'country_id', 'region_name', 'country_code', 'country', 
+META_COLS = ['region_id', 'country_id', 'region_code', 'region_name', 'country_code', 'country', 
     'date', 'cases', 'deaths', 'tests',
     'population', 'land_KM2', 'land_dens', 'city_KM2', 'city_dens',
 ]

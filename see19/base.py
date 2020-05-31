@@ -1,33 +1,66 @@
-import requests
+import math
 import numpy as np
 import pandas as pd
+import requests
+import urllib
+from io import BytesIO
 
 import us
 
-from .helpers import accept_string_or_list
+from .helpers import accept_string_or_list, ProgressBar
 from .charts import CompChart2D, CompChart4D, HeatMap, BarCharts, ScatterFlow
 from .constants import ALL_RANGES, RANGES, GMOBIS, AMOBIS, CAUSES, MAJOR_CAUSES, \
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
-        COUNTRIES_W_REGIONS, COUNT_TYPES, BASE_COLS, PER_APPENDS, COUNT_APPENDS, \
-        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS
+        COUNTRIES_W_REGIONS, COUNTRIES_W_REGIONS_LONG, COUNT_TYPES, BASE_COLS, PER_APPENDS, COUNT_APPENDS, \
+        BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
+        AUSABBRS, BRAABBRS, CANABBRS, ITAABBRS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
 def get_baseframe(test=False):
+    progbar = ProgressBar()
+    counter = 0
+    progbar.clock(counter)
+
     if test:
         url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_testset.txt'
     else:
         url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
+
     page = requests.get(url)
+
+    counter += 2
+    progbar.clock(counter)
     df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)
 
-    return pd.read_csv(df_url, parse_dates=['date'])
+    counter += 4
+    progbar.clock(counter)
+    url = urllib.request.urlopen(df_url)
+
+    counter += 7
+    progbar.clock(counter)
+    lines_number = sum(1 for line in BytesIO(url.read()))
+
+    counter += 9
+    progbar.clock(counter)
+
+    lines_in_chunk = int(math.ceil(lines_number / (progbar.maxlen - counter)))
+    chunks = pd.read_csv(df_url, chunksize=lines_in_chunk)
+
+    dfs = []
+    for chunk in chunks:
+        counter += 1
+        progbar.clock(counter)
+        dfs.append(chunk)
+
+    return pd.concat(dfs)
 
 class CaseStudy:
     """
     Class for filtering the baseframe dataset, analysing, and generating graphs
     """
     COUNTRIES_W_REGIONS = COUNTRIES_W_REGIONS
+    COUNTRIES_W_REGIONS_LONG = COUNTRIES_W_REGIONS_LONG
     COUNT_TYPES = COUNT_TYPES    
     BASECOUNT_CATS = BASECOUNT_CATS
     BASE_PLUS_PER_CATS = BASE_PLUS_PER_CATS
@@ -121,11 +154,19 @@ class CaseStudy:
         if 'gdp' in factors:
             self.pop_cats.append('gdp')
 
-        if self.country_level and self.mobis:
+        if self.country_level:
+            if self.mobis:
                 raise AttributeError("""
                     Google and Apple mobility factors {} are not available when country_level=True
                 """.format(self.mobis)
             )
+        else:
+            countries_w_regions = [region for region in self.regions if region in self.COUNTRIES_W_REGIONS + self.COUNTRIES_W_REGIONS_LONG]
+            if countries_w_regions:
+                raise AttributeError(""""
+                    {} ha{} subregions. To treat aggregate the country data, set `country_level=True` 
+                """.format(', '.join(countries_w_regions), 's' if len(countries_w_regions) == 1 else 've'))
+
         if not all(factor in self.ALLOWED_FACTORS_TO_FAVOR_EARLIER for factor in self.factors_to_favor_earlier):
             raise AttributeError("""
                 Only the following categories can included in factors_to_favor_earlier: {}
@@ -143,8 +184,11 @@ class CaseStudy:
                     DMA or growth not available for {}. Only available for {}.
                 """.format(' ,'.join(dma_not_available, ' ,'.join(self.DMA_CATS))))
         
-        self.abbreviate = 'initials'
+        ### ELIMATE THE GEORGIA COLLISION; GA, USA and the country/region Georgia
+        if any(usa in self.countries for usa in ['USA', 'United State of America (the']) and 'Georgia' not in self.countries:
+            self.excluded_countries += ['Georgia']
 
+        self.abbreviate = 'initials'
         self.df = self._filter_baseframe()
         
         # Chart inner classes; pass the casestudy instance to make 
@@ -191,7 +235,7 @@ class CaseStudy:
         
         return baseframe[baseframe.date == date].deaths.sum()
 
-    def _abbreviator(self, region, abbreviate=None):
+    def _abbreviator(self, region, abbreviate=None, country_hint=False):
         """
         Used to abbreviate region names
 
@@ -200,8 +244,21 @@ class CaseStudy:
             'first': finds first word of name
         """
         abbreviate = abbreviate if abbreviate else self.abbreviate
-        if us.states.lookup(region):
-            return us.states.lookup(region).abbr
+
+        if abbreviate == 'loose' and len(region) < 9:
+            return region
+        if region in AUSABBRS.keys():
+            return AUSABBRS[region] + ', AUS' if country_hint else ''
+        elif region in BRAABBRS.keys():
+            return BRAABBRS[region] + ', BRA' if country_hint else ''
+        elif region in CANABBRS.keys():
+            return CANABBRS[region] + ', CAN' if country_hint else ''
+        elif region in CHNABBRS.keys():
+            return CHNABBRS[region] + ', CHN' if country_hint else ''
+        elif region in ITAABBRS.keys():
+            return ITAABBRS[region] + ', ITsA' if country_hint else ''
+        elif us.states.lookup(region):
+            return us.states.lookup(region).abbr + ', USA' if country_hint else ''
         else:
             region = region.split(' ')            
             if len(region) > 1:
@@ -296,18 +353,26 @@ class CaseStudy:
 
         if self.country_level or country_level:
             df = self._agg_to_country_level(df)
-        
+
         if self.regions:
-            df = df[df['region_name'].isin(self.regions)]
+            df = df[
+                df['region_name'].isin(self.regions) |
+                df['region_id'].isin(self.regions) |
+                df['region_code'].isin(self.regions)
+            ]
         
         if self.countries:    
-            df = df[df['country'].isin(self.countries)]            
+            df = df[df['country'].isin(self.countries) | df['country_code'].isin(self.countries)]
         
         if self.excluded_regions:
-            df = df[~df['region_name'].isin(self.excluded_regions)]
+            df = df[~(
+                df['region_name'].isin(self.excluded_regions) |
+                df['region_id'].isin(self.excluded_regions) |
+                df['region_code'].isin(self.excluded_regions)
+            )]
         
         if self.excluded_countries:
-            df = df[~df['country'].isin(self.excluded_countries)]            
+            df = df[~(df['country'].isin(self.excluded_countries) | df['country_code'].isin(self.excluded_countries))]            
 
         # Reset regions attribute so that it reflects
         # the actual remaining region in the dataframe        
