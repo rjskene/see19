@@ -3,31 +3,29 @@
 **An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
 
 ***
-***NOTE ON THE TEST DATASET***
+# May 31, 2020 Update 
 
-As of May 15, a `testset` folder has been added to the master. Going forward, the testset will include new data  (either additional factors or new regions) that has not yet been incorporated into the `see19` interface. The goal is to integrate the new data into the interface over time. The `testset` will be update concurrently with the main dataset.
+Upgrade to version 0.3.0 is complete. Please exercise **caution** if switching to this version as there have been a number of significant changes / additions that might impact your prior work.
 
-The existing `see19` package will ***NOT*** be compatiable with the testset, **HOWEVER** you can download the `testset` via `get_baseframe` by setting `test=True`.
+**SUMMARY OF UPDATES**
 
-Data currently available only in the testset:
+**1. Testset Graduation**
+* ***Test counts*** and ***Apple mobility*** data have been moved into the main dataset.
+    * Reporting on testing continues to be inconsistent around the world. Many countries have only just begun reporting and many report on an infrequent basis (weekly or worse). Where there are gaps in daily figures, non-linear interpolation is used to smooth figures. Several key regions including Brazil and France have very minimal data at all.
 
-* [Apple Mobility index](https://www.apple.com/covid19/mobility)
+**2. Added filter functionality**   
+When instanting a `CaseStudy` instance:
+* You can now pass any of `region_id`, `region_code`, or `region_name` to `regions`/`exclude_regions` in a single iterable. `region_code` column has been added, and is either simply a replica of `country_code` or the accepted abbreviation of the province or state. i.e. *Alberta's* `region_code` is **AB**.
+* `country_code` and `country_id` now also acceptable in `countries`/`exclude_countries`
+* pandas Series and numpy arrays are now acceptable iterables for these filters as well.
 
-* Test counts
-    * [Country level](https://data.humdata.org/dataset/total-covid-19-tests-performed-by-country)
-    * [Italy](https://github.com/pcm-dpc/COVID-19)
-        * **NOTE:** Italian testing has two categories that complicate the data somewhat
-            * `tamponi` refers to swabs. Swabs have been recorded since very early on. There are generally multiple swabs per individual whereas most test counts are one test per individual.
-            * `casi_testati` refers to the more standard one test per person. This metric was not reliably tract before mid-April
-            * for metrics prior to mid-April, `see19` adjusts the `tamponi` counts by finding the average `tamponi` per `case_testati` across the all data then dividing the tampons by the average to estimate casi_testati
-    * [Australia](https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json)
-    * [Canada](https://www.canada.ca/en/public-health/services/diseases/2019-novel-coronavirus-infection.html)
-    * [United States](https://covidtracking.com/)
+**3. Miscellaneous**    
+* To access the testset via `get_baseframe`, set `test=True`
+* Added progress bar for `get_baseframe()` (a couple hours I won't ever get back)
+* Additional styling attributes to most chart make() functions
+* Added exception to catch when a `country_w_sub` is provided as region when `country_level=False`
+* when `USA` is filter via `countries`, see19 now automatically excludes the country of Georgia. This was a major personal irritant of mine, but if you have the need you can simply include Georgia in `countries` as well.
 
-
-**NOTE:** Brazil is not included in the `tests` count data currently. Brazil test counts are only available on the country level whereas case and fatality data is available on a regional level. I am exploring methodsto allocate aggregate tests among the regions (perhaps simply as percentage of population or cases counts).
-
-**ANOTHER NOTE:** Testing statistics are still quite spotty internationally. For instance, many European countries only appear to report cumulative test counts on a weekly basis. Different methods of interpolation will be explored for daily values.
 
 ***
 # Latest Analysis
@@ -70,8 +68,7 @@ _- Carveth Read, Logic, Chapter 22_
 **see19** aggregates the following data:
 
 * COVID19 Data Characteristics:
-    * Cumulative Cases for each region on each date
-    * Cumulative Fatalities for each region on each date
+    * Cumulative Case, Fatality, and Testing statistics for each region on each date
     * State / Provincial-level data available for
 * Factor Data Characteristics available for most regions include:
     * Longitude / Latitude, Population, Demographic Segmentation, Density
@@ -88,16 +85,14 @@ In addition to the dataset, `see19` is a python package that provides:
 * Visualization tools in `bokeh` and `matplotlib` to compare factors across multiple dimensions ..
 * Statistical analysis is also a goal of the project and I expect to add such analysis tools as time progresses. Until then, the data is available for all.
 
-<br/>
-<div align="center"><b> THIS IS A SOLO PROJECT. <br/>I FIND ERRORS WITHIN THE DATA REGULARLY. PLEASE FLAG ANY ISSUES YOU SEE!</b></div>
-
 ***
 # Suggestions For Additional Data
 
 I am always on the hunt for new additions to the dataset. If you have any suggestions, please contact me. Specifically, if you are aware of any datasets that might integrate nicely with `see19` in the following realms:
 
-1. German daily, state-level case and fatality data
-2. Russian daily, state-level case and fatality data
+1. German daily, state-level counts
+2. Russian daily, state-level counts
+3. India daily, sate-level counts
 3. State or city level travel data
 4. Global Commercial Airline route data (there seems to be plenty available, except only for a whopping price)
 

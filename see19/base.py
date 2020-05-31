@@ -28,7 +28,6 @@ def get_baseframe(test=False):
         url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
 
     page = requests.get(url)
-
     counter += 2
     progbar.clock(counter)
     df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)

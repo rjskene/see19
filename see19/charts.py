@@ -45,6 +45,7 @@ class BaseChart:
         That can be used in the charts
         """
         # Next, Make Basic Labels for Count Types
+        self.labels = {}
         for cat in self._casestudy.ALL_COUNT_CATS:
             self.labels[cat] = self._count_type_label_maker(cat)
 
