@@ -13,7 +13,7 @@ from .constants import ALL_RANGES, RANGES, GMOBIS, AMOBIS, CAUSES, MAJOR_CAUSES,
         STRINDEX_SUBCATS, STRINDEX_CATS, CONTAIN_CATS, ECON_CATS, HEALTH_CATS, POLLUTS, TEMP_MSMTS, MSMTS, \
         COUNTRIES_W_REGIONS, COUNTRIES_W_REGIONS_LONG, COUNT_TYPES, BASE_COLS, PER_APPENDS, COUNT_APPENDS, \
         BASECOUNT_CATS, PER_CATS, BASE_PLUS_PER_CATS, LOGNAT_CATS, ALL_CATS, KEY3_CATS, \
-        AUSABBRS, BRAABBRS, CANABBRS, ITAABBRS
+        AUSABBRS, BRAABBRS, CANABBRS, CHNABBRS, ITAABBRS
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
@@ -188,7 +188,6 @@ class CaseStudy:
         if any(usa in self.countries for usa in ['USA', 'United State of America (the']) and 'Georgia' not in self.countries:
             self.excluded_countries += ['Georgia']
 
-        self.abbreviate = 'initials'
         self.df = self._filter_baseframe()
         
         # Chart inner classes; pass the casestudy instance to make 
@@ -203,12 +202,10 @@ class CaseStudy:
         """
         Parameter
         _________
-        
         date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
 
         Returns 
         ________
-
         type float, total global cases as of specified date
         """
         baseframe = self.baseframe.copy(deep=True)
@@ -221,12 +218,10 @@ class CaseStudy:
         """
         Parameter
         _________
-        
         date:   type str, from '%Y-%m-%df' e.g. '2020-05-05'
 
         Returns 
         ________
-
         type float, total global fatalities as of specified date
         """
         baseframe = self.baseframe.copy(deep=True)
@@ -234,42 +229,6 @@ class CaseStudy:
             baseframe = baseframe[baseframe.region_name.isin(regions)]
         
         return baseframe[baseframe.date == date].deaths.sum()
-
-    def _abbreviator(self, region, abbreviate=None, country_hint=False):
-        """
-        Used to abbreviate region names
-
-        available abbreviate option:
-            'initials': finds initials
-            'first': finds first word of name
-        """
-        abbreviate = abbreviate if abbreviate else self.abbreviate
-
-        if abbreviate == 'loose' and len(region) < 9:
-            return region
-        if region in AUSABBRS.keys():
-            return AUSABBRS[region] + ', AUS' if country_hint else ''
-        elif region in BRAABBRS.keys():
-            return BRAABBRS[region] + ', BRA' if country_hint else ''
-        elif region in CANABBRS.keys():
-            return CANABBRS[region] + ', CAN' if country_hint else ''
-        elif region in CHNABBRS.keys():
-            return CHNABBRS[region] + ', CHN' if country_hint else ''
-        elif region in ITAABBRS.keys():
-            return ITAABBRS[region] + ', ITsA' if country_hint else ''
-        elif us.states.lookup(region):
-            return us.states.lookup(region).abbr + ', USA' if country_hint else ''
-        else:
-            region = region.split(' ')            
-            if len(region) > 1:
-                if self.abbreviate == 'first':
-                    first = region[0][0] + '.'
-                    return ' '.join([first] + region[1:])
-                elif self.abbreviate == 'initials':
-                    initials = '.'.join(reg[0] for reg in region) + '.'
-                    return initials
-            else:
-                return region[0][:2]
 
     def _earlier_is_better(self, series, scale_factor=1):
         """
@@ -298,14 +257,15 @@ class CaseStudy:
         # Loop through each country 
         dfs_country = []
         for code, df_group in df_subs.groupby('country_code'):
-            region_id = 'reg_for_' + code
-            region_name = df_group.iloc[0]['country']
+            region_id = 'id_for_' + code
+            region_name = 'name_for_' + code
+            region_code = code
             country_dict = df_group.iloc[0][FIRST_ROW]
 
             # Group each country frame by date, then aggregate column values on the date
             country_dicts = []
             for date, df_date in df_group.groupby('date'):
-                country_dict = {'region_id': region_id, 'region_name': region_name, **country_dict}
+                country_dict = {'region_id': region_id, 'region_code':region_code, 'region_name': region_name, **country_dict}
                 country_dict['date'] = date
 
                 for sum_ in SUMS:
@@ -319,7 +279,7 @@ class CaseStudy:
             
             df_country = pd.DataFrame(country_dicts)
             dfs_country.append(df_country)
-
+            
         df_countries = pd.concat(dfs_country)
 
         df_nosubs = baseframe[~baseframe.country_code.isin(self.COUNTRIES_W_REGIONS)]
@@ -362,7 +322,11 @@ class CaseStudy:
             ]
         
         if self.countries:    
-            df = df[df['country'].isin(self.countries) | df['country_code'].isin(self.countries)]
+            df = df[
+                df['country'].isin(self.countries) | 
+                df['country_code'].isin(self.countries) |
+                df['country_id'].isin(self.countries)
+            ]
         
         if self.excluded_regions:
             df = df[~(
@@ -372,7 +336,11 @@ class CaseStudy:
             )]
         
         if self.excluded_countries:
-            df = df[~(df['country'].isin(self.excluded_countries) | df['country_code'].isin(self.excluded_countries))]            
+            df = df[~(
+                df['country'].isin(self.excluded_countries) | 
+                df['country_code'].isin(self.excluded_countries) |
+                df['country_id'].isin(self.excluded_countries)
+            )]            
 
         # Reset regions attribute so that it reflects
         # the actual remaining region in the dataframe        
@@ -519,10 +487,10 @@ class CaseStudy:
         if self.world_averages or world_averages:
             globe_rows = []
             for date, df_date in df.groupby('date'):
-                globe_row = ['REG_FOR_WORLD_AVGS', 'COUNTRY_FOR_WORLD_AVGS', 'WorldAvg', 'WLDAVG', 'WorldAvg'] 
+                globe_row = ['REDID_FOR_WORLD_AVGS', 'COUNTRY_FOR_WORLD_AVGS', 'AVG', 'WorldAvg', 'WLDAVG', 'WorldAvg'] 
                 globe_row += [date]
 
-                df_date = df_date[[col for col in df_date.columns if col not in ['region_id', 'country_id', 'region_name', 'country_code', 'country', 'date']]]
+                df_date = df_date[[col for col in df_date.columns if col not in ['region_id', 'country_id', 'region_code', 'region_name','country_code', 'country', 'date']]]
                 globe_row += df_date.mean().tolist()
                 
                 globe_row = [round(i, 2) if isinstance(i, float) else i for i in globe_row]
