@@ -2,6 +2,11 @@
 
 **An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
 
+***June 1***
+As of this morning, there is an issue with Brazil data and it does not appear in the updated dataset. You can download the May 31 upload if you wish to work with the most recent Brazil data.
+
+Hoping to fix by June 2 update.
+
 ***
 # May 31, 2020 Update 
 
@@ -186,5 +191,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](output_14_0.png)
+![png](output_15_0.png)
 
