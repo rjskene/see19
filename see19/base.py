@@ -17,21 +17,24 @@ from .constants import ALL_RANGES, RANGES, GMOBIS, AMOBIS, CAUSES, MAJOR_CAUSES,
 
 CASE_COLS = [col for col in BASE_COLS if col not in ALL_RANGES]
 
-def get_baseframe(test=False):
+def get_baseframe(test=False, filename=''):
     progbar = ProgressBar()
     counter = 0
     progbar.clock(counter)
 
-    if test:
-        url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_testset.txt'
+    if not filename:
+        if test:
+            url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_testset.txt'
+        else:
+            url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
+
+        page = requests.get(url)
+        counter += 2
+        progbar.clock(counter)
+        df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)
     else:
-        url = 'https://raw.githubusercontent.com/ryanskene/see19/master/latest_dataset.txt'
-
-    page = requests.get(url)
-    counter += 2
-    progbar.clock(counter)
-    df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/see19{}-{}.csv'.format('test' if test else 'data', '-TEST' if test else '', page.text)
-
+        df_url = 'https://raw.githubusercontent.com/ryanskene/see19/master/{}set/{}'.format('test' if test else 'data', filename)
+        
     counter += 4
     progbar.clock(counter)
     url = urllib.request.urlopen(df_url)
