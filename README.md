@@ -4,6 +4,8 @@
 
 *Dataset Last Updated June 3, 2020*
 
+***WARNING JUNE 3: There is an issue with some Brazil data. Some regions have their start dates oriented incorrectly in the `casestudy.df` object. Working on a fix***
+
 ***
 # May 31, 2020 Update 
 
