@@ -2,9 +2,9 @@
 
 **An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
 
-*Dataset Last Updated June 3, 2020*
+*Dataset Last Updated June 4, 2020*
 
-***WARNING JUNE 3: There is an issue with some Brazil data. Some regions have their start dates oriented incorrectly in the `casestudy.df` object. Working on a fix***
+***Note: prior issues appear resolved***
 
 ***
 # May 31, 2020 Update 
