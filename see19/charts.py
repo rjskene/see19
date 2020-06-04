@@ -77,6 +77,15 @@ class BaseChart:
         if self._casestudy.causes:
             self.labels = {**self.labels, **{cause + '_%': self._cause_of_death_label_maker(cause) for cause in self._casestudy.causes}}
 
+        # Add case to test comp labels
+        self.labels['cases_per_test'] = 'Confirmed Cases Per Test'
+        self.labels['tests_per_case'] = 'Tests per Confirmed Case'
+
+        for append in self._casestudy.COUNT_APPENDS:
+            factor = 'cases{}_per_test{}'.format(append, append) 
+            factor_split = factor.split('_per_')
+            self.labels[factor] = self._count_type_label_maker(factor_split[0]) + ' Per ' + self._count_type_label_maker(factor_split[1])
+
     def _count_type_label_maker(self, cat):
         factor_split = cat.split('_')
         start = 'Daily' if 'new' in cat else 'Cumulative'
@@ -904,7 +913,7 @@ class BarCharts(BaseChart):
         plt.subplots_adjust(hspace=0.4)
 
         for hline in hlines:
-            plt.axhline(y=hline['y_hline'], color=hline['color'], alpha=hline_alpha)
+            plt.axhline(y=hline['y_hline'], color=hline['color'], alpha=hline['alpha'])
 
         if save_file:
             plt.savefig(filename, bbox_inches='tight')
@@ -1079,11 +1088,12 @@ class ScatterFlow(BaseChart):
             df = df[df[comp_category].notna()]
         df = df[['date', 'region_code', 'region_name', 'days', comp_category]]
         df = df[df.region_name.isin(regions)]
+        
         region_codes = df.region_code.unique()    
         max_days = np.array([df_group.days.max() for i, df_group in df.groupby('region_name')]).min()
         min_days = np.array([df_group.days.min() for i, df_group in df.groupby('region_name')]).max()
         df = df[(df.days <= max_days) & (df.days >= min_days)]
-
+        
         xs = np.repeat(df.days.dt.days, np.array(regions).shape[0])
 
         region_keys = np.arange(1, len(region_codes) + 1)
@@ -1102,7 +1112,6 @@ class ScatterFlow(BaseChart):
         
         fig, ax = plt.subplots(figsize=(width, height))
         cmap = plt.cm.get_cmap('Blues')
-
         sc = ax.scatter(xs, ys, marker=marker, s=ms, c=zs, vmin=zs.min(), vmax=zs.max()*0.7, cmap=cmap)
         
         cax = inset_axes(ax,
