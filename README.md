@@ -1,10 +1,11 @@
 # see19
 
-**An aggregation dataset and interface for visualizing and analyzing the epidemiology of Coronavirus Disease 2019 aka SARS-CoV-2 aka COVID19 aka C19**
+**An aggregation dataset and interface for visualizing 
+           and analyzing Coronavirus Disease 2019 aka COVID19 
+           aka C19**
 
-*Dataset Last Updated June 4, 2020*
-
-***Note: prior issues appear resolved***
+*Dataset Last Updated June 05, 2020*
+       
 
 ***
 # May 31, 2020 Update 
