@@ -158,6 +158,7 @@ CUSTOM_RANGES = [custom_range for ranges in RANGES.values() for custom_range in 
 ALL_RANGES = AGE_COLS + CUSTOM_RANGES
 
 GMOBIS = ['retail_n_rec', 'groc_n_pharm', 'parks', 'transit', 'workplaces', 'residential']
+AMOBIS = ['transit_apple', 'driving_apple', 'walking_apple']
 CAUSES = [
     'neoplasms', 'blood', 'endo', 'mental', 'nervous', 'circul', 'infectious', 'respir', 
     'digest', 'skin', 'musculo', 'genito', 'childbirth', 'perinatal', 'congenital',
@@ -174,16 +175,16 @@ CONTAIN_CATS = [cat for cat in STRINDEX_CATS if 'c' in cat]
 ECON_CATS = [cat for cat in STRINDEX_CATS if 'e' in cat and cat != 'strindex']
 HEALTH_CATS = [cat for cat in STRINDEX_CATS if 'h' in cat]
 KEY3_CATS = ['h1', 'h2', 'h3']
-
 POLLUTS = [
     'co', 'pm25', 'o3', 'no2', 'so2',
     'dew', 'humidity', 'pm10', 'pressure', 'temperature',
     'wind gust', 'wind speed', 'wind-gust', 'wind-speed', 'wd',
     'precipitation', 'uvi', 'aqi', 'pol', 'mepaqi', 'pm1'
 ]
-
 TEMP_MSMTS = ['temp', 'dewpoint']
 MSMTS = ['uvb', 'rhum'] + TEMP_MSMTS
+
+ALL_FACTORS = GMOBIS + AMOBIS + CAUSES + STRINDEX_CATS + POLLUTS + MSMTS
 
 COUNT_TYPES = ['cases', 'deaths', 'tests']
 COUNT_APPENDS = ['_dma', '_new', '_new_dma']
@@ -201,9 +202,8 @@ META_COLS = ['region_id', 'country_id', 'region_code', 'region_name', 'country_c
 ]
 BASE_COLS = META_COLS + ALL_RANGES
 
-AMOBIS = ['transit_apple', 'driving_apple', 'walking_apple']
-
-MANUAL_CHART_LABELS = {'': 'January 2020',
+MANUAL_CHART_LABELS = {
+    '': 'January 2020',
     'population': 'Population',
     'land_dens': 'Density of Land Area',
     'city_dens': 'Population Density of Largest City',

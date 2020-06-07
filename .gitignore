@@ -140,11 +140,15 @@ cython_debug/
 # Custom
 .gitattributes
 migrations/
+update/
+tests/
+fixtures/
 .DS_Store
 
 # These are local items I want to keep to myself for now
 apps.py
 baseframe.py
 models.py
-scrapers.py
+update.py
+update_email
 README.ipynb
