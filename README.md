@@ -4,7 +4,9 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated June 06, 2020*
+*Dataset Last Updated June 07, 2020*
+
+ *Brazil has removed its cumulative, regional case and fatality count data from the main government website. I am working on a new source and will update asap.*
        
 
 ***
