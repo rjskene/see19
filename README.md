@@ -6,7 +6,7 @@
 
 *Dataset Last Updated June 07, 2020*
 
- *Brazil has removed its cumulative, regional case and fatality count data from the main government website. I am working on a new source and will update asap.*
+ *A new source for Brazil data has been found including new regional-level testing data. Source will be updated in the docs shortly.*
        
 
 ***
