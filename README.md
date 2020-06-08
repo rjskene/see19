@@ -4,7 +4,7 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated June 07, 2020*
+*Dataset Last Updated June 08, 2020*
 
  *A new source for Brazil data has been found including new regional-level testing data. Source will be updated in the docs shortly.*
        
