@@ -102,7 +102,7 @@ class CaseStudy:
         start_factor='deaths', start_hurdle=1, tail_factor='', tail_hurdle=1.2, 
         min_deaths=0, min_days_from_start=0, country_level=False, world_averages=False,
         temp_scale='C', lognat=False, favor_earlier=False, factors_to_favor_earlier=[],
-        interpolate=[], interpolate_method={'method': 'polynomial', 'order': 2},
+        interpolate=[], interpolate_method={'method': 'linear'},
     ):
         # Base DataFrame
         self.baseframe = baseframe

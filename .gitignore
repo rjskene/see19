@@ -143,6 +143,7 @@ migrations/
 update/
 tests/
 fixtures/
+github/
 .DS_Store
 
 # These are local items I want to keep to myself for now

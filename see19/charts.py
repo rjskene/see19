@@ -388,6 +388,7 @@ class CompChart4D(BaseChart):
         
         df.region_name = pd.Categorical(df.region_name, self.region_names)
         df = df.sort_values(by=['region_name', 'date'])
+        
         return df
     
     def _grey_maker(self, rgb_value):
@@ -408,7 +409,7 @@ class CompChart4D(BaseChart):
             lp_colorbar=0,
             grid_grey= 87, pane_grey=200, tick_grey=30,
             zaxis_left=False, gridlines=True, tight=True,
-            width=16, height=8, save_file=False, filename=''
+            width=16, height=8, save_file=False, filename='', dpi=1200,
         ):
         # Create `make` specific dataframe
         
@@ -620,7 +621,7 @@ class CompChart4D(BaseChart):
         plt.subplots_adjust(left=0, bottom=-.3, right=1, top=1, wspace=0, hspace=0)
         
         if save_file:
-            plt.savefig(filename, bbox_inches = "tight")
+            plt.savefig(filename, bbox_inches = "tight", dpi=dpi)
         
         return plt
 
@@ -706,7 +707,7 @@ class HeatMap(BaseChart):
         annotations=[], hlines=[], hline_alpha=.1,
         palette_base='coolwarm', hexsize=27, bins=None,
         rects=[],
-        width=16, height=12, save_file=False, filename=''
+        width=16, height=12, save_file=False, filename='',  dpi=1200,
     ):
         factor_starts = ['start_hurdle', 'max']
         if comp_factor_start not in factor_starts or color_factor_start not in factor_starts:
@@ -801,7 +802,7 @@ class HeatMap(BaseChart):
                     )
 
         if save_file:
-            plt.savefig(filename, bbox_inches='tight')
+            plt.savefig(filename, bbox_inches='tight', dpi=dpi)
         
         return plt
 
@@ -820,7 +821,7 @@ class BarCharts(BaseChart):
         # All figures as of specified date
         if self.as_of:
             df = df[df.date == self.as_of]
-
+        
         groups = []
         for region_id, df_group in df.groupby('region_id'):
             groupdict = {}
@@ -858,7 +859,7 @@ class BarCharts(BaseChart):
         annotations=[], hlines={}, hline_alpha=.1,
         colors=['red', 'magenta', 'blue'],
         sort_cols=[], feature_regions=[],
-        width=16, height=12, save_file=False, filename=''    
+        width=16, height=12, save_file=False, filename='',  dpi=1200,  
     ):
         df_bcs = self.df.copy(deep=True)
         if regions:
@@ -916,7 +917,7 @@ class BarCharts(BaseChart):
             plt.axhline(y=hline['y_hline'], color=hline['color'], alpha=hline['alpha'])
 
         if save_file:
-            plt.savefig(filename, bbox_inches='tight')
+            plt.savefig(filename, bbox_inches='tight', dpi=dpi)
 
         return plt
 
@@ -944,7 +945,7 @@ class ScatterFlow(BaseChart):
         fs_clabel=10, fs_legend=12, pad_clabel=10,
         xy_legend=(0, 0), xy_cbar=(0, 0),
         width=14, height=26,
-        save_file=False, filename='',
+        save_file=False, filename='', dpi=1200,
     ):
         self.subcats_keys = np.arange(1, len(self._casestudy.STRINDEX_SUBCATS) + 1)
         self.subcats_key = {tup[0]: tup[1] for tup in zip(self.subcats_keys, reversed(self._casestudy.STRINDEX_SUBCATS))}
@@ -1059,7 +1060,7 @@ class ScatterFlow(BaseChart):
         plt.subplots_adjust(left=.1, bottom=.1, right=1, top=1, wspace=0.2, hspace=0.22)
         
         if save_file:
-            plt.savefig(filename, bbox_inches='tight')
+            plt.savefig(filename, bbox_inches='tight', dpi=1200)
 
         return plt
 
@@ -1071,8 +1072,8 @@ class ScatterFlow(BaseChart):
         fs_yticks=8,
         pad_xlabel=10, pad_ylabel=10, pad_clabel=10, 
         width=8, height=6, xy_cbar=(0,0), h_cbar=1, w_cbar=.3,
-        annotations=[],
-        save_file=False, filename='',
+        annotations=[], palette_base='RdYlGn_r',
+        save_file=False, filename='', dpi=1200,
     ):
         regions = regions if regions else self.regions
         regions = sorted(regions, reverse=True)
@@ -1111,7 +1112,7 @@ class ScatterFlow(BaseChart):
         zs = np.array(zs).flatten()
         
         fig, ax = plt.subplots(figsize=(width, height))
-        cmap = plt.cm.get_cmap('Blues')
+        cmap = plt.cm.get_cmap(palette_base)
         sc = ax.scatter(xs, ys, marker=marker, s=ms, c=zs, vmin=zs.min(), vmax=zs.max()*0.7, cmap=cmap)
         
         cax = inset_axes(ax,
@@ -1133,7 +1134,7 @@ class ScatterFlow(BaseChart):
         ax.set_title(title, fontsize=fs_title, y=y_title)
         ax.set_yticks(region_keys)
         
-        yticklabels = region_codes
+        yticklabels = [' '.join(list(region_code)) for region_code in region_codes]
         ax.set_yticklabels(yticklabels, fontsize=fs_yticks)
         ax.set_ylabel(ylabel, labelpad=pad_ylabel, fontsize=fs_ylabel)
 
@@ -1143,6 +1144,6 @@ class ScatterFlow(BaseChart):
             plt.text(*annot)
 
         if save_file:
-            plt.savefig(filename, bbox_inches='tight')
+            plt.savefig(filename, bbox_inches='tight', dpi=dpi)
 
         return plt
