@@ -57,16 +57,16 @@ def update_readme(note=''):
     )
 
 def git_push(style='dataset'):
-    repo = Repo(config('SEE19PATH'))
+    repo = Repo(config('ROOTPATH'))
     assert style in ['dataset', 'testset', 'rm_only']
     
-    adds = ['dataset', 'latest_dataset.txt', 'README.md']
+    adds = [config('SEE19PATH') + item for item in ['dataset/', 'latest_dataset.txt', 'README.md']]
     m = 'update dataset'
     if style == 'testset':
-        adds += ['testset', 'latest_testset.txt']
+        adds += [config('SEE19PATH') + item for item in ['testset', 'latest_testset.txt']]
         m += ' and testset'
     elif style == 'rm_only':
-        adds = 'README.md'
+        adds = config('SEE19PATH') + 'README.md'
         m = 'update README'
     
     if style in ['dataset', 'testset']:
@@ -74,8 +74,8 @@ def git_push(style='dataset'):
 
     repo.git.add(*adds)
     repo.git.commit(m=m)
-    origin = repo.remote(name='origin')
-    origin.push()
+    repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')
+    repo.remote(name='origin').push()
 
 def log_email(filename, critical=False):
     if critical:

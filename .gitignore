@@ -143,9 +143,10 @@ cython_debug/
 
 # see19 files/folders to ignore
 fixtures/
-github/
 migrations/
 
 # Root files/folders to ignore
+.gitattributes
 datadump2.json
+README.ipynb
 
