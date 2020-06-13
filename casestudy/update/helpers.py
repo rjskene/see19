@@ -23,8 +23,8 @@ def update_readme(note=''):
     """
     Updates README.ipynb then converts to markdown
     """
-    README_FILE = config('SEE19PATH') + '/README.ipynb'
-    README_NAME = config('SEE19PATH') + '/README'
+    README_FILE = config('SEE19PATH') + 'README.ipynb'
+    README_NAME = config('SEE19PATH') + 'README'
 
     nb = nbf.read(README_FILE, as_version=4)
     update_date = dt.now().strftime('%B %d, %Y')
