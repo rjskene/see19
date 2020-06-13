@@ -35,7 +35,7 @@ requires = [
 
 setuptools.setup(
     name='see19',
-    version='0.3.3',
+    version='0.3.5',
     author='Ryan Skene',
     author_email='rjskene83@gmail.com',
     description='An interface for visualizing and analysing the see19 dataset',

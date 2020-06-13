@@ -145,12 +145,8 @@ tests/
 fixtures/
 github/
 tweetbot/
+/__init__.py
 .DS_Store
 
 # These are local items I want to keep to myself for now
-apps.py
-baseframe.py
-models.py
-update.py
-update_email
 README.ipynb
