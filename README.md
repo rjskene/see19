@@ -1,12 +1,13 @@
 # see19
 
 **An aggregation dataset and interface for visualizing 
-       and analyzing Coronavirus Disease 2019 aka COVID19 
-       aka C19**
+           and analyzing Coronavirus Disease 2019 aka COVID19 
+           aka C19**
 
 *Dataset Last Updated June 13, 2020*
-Note: All testset and many of the historical datasets have been removed to reduce the repo size.
-   
+
+*Note: All testset and many of the historical datasets have been removed to reduce the repo size.*
+       
 
 ***
 # May 31, 2020 Update 
