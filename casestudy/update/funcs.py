@@ -12,6 +12,7 @@ import shutil
 from zipfile import ZipFile
 import unidecode
 
+from decouple import config
 import cdsapi
 
 from selenium.webdriver.common.by import By
@@ -21,7 +22,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from django.db import transaction
 from django.db.models import Q
 
-from zooscraper.globals import max_bulk_create, ChromeInstantiator, CHROMEDRIVER_PATH, CHROME_BIN
+from zooscraper.globals import max_bulk_create, ChromeInstantiator
 from casestudy.models import Cases, Deaths, Tests, Region, Measurements, Pollutant, City, \
     Country, Strindex, Cause, Mobility, Travel, AppleMobility
 
@@ -482,7 +483,8 @@ def update_amobi(create=False, headless=True):
             max_bulk_create(mobi_objs)
 
 def update_msmts(create=False):
-    MSMT_PATH = '/Users/spindicate/Documents/docs/covid19/msmt/'
+
+    MSMT_PATH = config('MSMTPATH')
     last_date = Measurements.objects.latest('date').date
     next_date = last_date + timedelta(1) 
     year = next_date.strftime('%Y')

@@ -1,0 +1,1 @@
+web: gunicorn zooscraper.wsgi --log-file -

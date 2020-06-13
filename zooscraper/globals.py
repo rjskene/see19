@@ -4,8 +4,7 @@ from selenium.webdriver.chrome.options import Options
 
 from django.db import transaction
 
-CHROMEDRIVER_PATH='/usr/local/bin/chromedriver'
-CHROME_BIN='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+from decouple import config
 
 class ChromeInstantiator():
     # Context Manager for instantiating a Chrome browser for Selenium
@@ -22,7 +21,7 @@ class ChromeInstantiator():
             # Instantiate the remote WebDriver
             self.options = Options()
             self.options.set_headless(headless=True)
-            self.options.binary_location = CHROME_BIN
+            self.options.binary_location = config('GOOGLE_CHROME_BIN')
         else:
             self.options=None
 
@@ -45,7 +44,7 @@ class ChromeInstantiator():
 
     def __enter__(self):
         print ('Instantiating Chrome WebDriver...')
-        self.chrome = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
+        self.chrome = webdriver.Chrome(executable_path=config('CHROMEDRIVER_PATH'),
                     options=self.options
         )
         self.enable_download_in_headless_chrome()
