@@ -1,2 +1,3 @@
 # Required for Heroku app to get under the 500MB max slug size. https://devcenter.heroku.com/articles/slug-compiler#ignoring-files-with-slugignore
 *.csv
+*.sqlite3
