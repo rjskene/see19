@@ -245,7 +245,7 @@ class TweetBot:
     def positivity_race(self, casestudy):
         us_regions = casestudy.df[casestudy.df.country_code == 'USA'].sort_values(by='cases', ascending=False).region_name.unique().tolist()[:20]
         us_regions = [reg for reg in us_regions if reg != 'Georgia']
-        filename = self.CHARTPATH + 'Positivity Ratio in US States.svg'
+        filename = self.CHARTPATH + 'Positivity Ratio in US States.png'
         kwargs = {
             'regions': us_regions,
             'title': 'Positivity Ratio in US States',

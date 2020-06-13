@@ -3,6 +3,8 @@ from datetime import datetime as dt
 from decouple import config
 from see19 import CaseStudy
 
+from .helpers import *
+
 def auto_update():
     from .baseframe import make_baseframe
     from .funcs import update_funcs
