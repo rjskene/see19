@@ -144,15 +144,8 @@ cython_debug/
 # see19 files/folders to ignore
 fixtures/
 migrations/
-dataset/
-testset/
-latest_dataset.txt
-latest_testset.txt
 
 # Root files/folders to ignore
 .gitattributes
 datadump2.json
 README.ipynb
-
-# IGNORE for push of dataset
-.gitignore4dataset
