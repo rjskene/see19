@@ -134,4 +134,3 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
