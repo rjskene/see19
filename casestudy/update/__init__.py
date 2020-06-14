@@ -7,16 +7,10 @@ from see19 import CaseStudy
 from .helpers import *
 from .baseframe import make_baseframe
 
-def auto_update():
+def auto_update(test=False):
     from .baseframe import make_baseframe
     from .funcs import update_funcs
     from .helpers import test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, log_email, git_push, update_readme, ExceptionLogger
-
-    #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
-    # Do this first, b/c if not possible, the rest of the code is useless
-    if config('HEROKU'):
-        wrapfunc = exc_logger.wrap('critical', timeout=timeout)(Repo.clone_from)
-        wrapfunc(config('SEE19GITURL', '/app/see19repo'))
 
     LOG_PATH = config('ROOTPATH') + 'casestudy/update/update_logs/'
     filename = 'update-{}.log'.format(dt.now().strftime('%Y-%m-%d'))
@@ -24,6 +18,12 @@ def auto_update():
 
     # Instantiate a new logger
     exc_logger = ExceptionLogger(logfile)
+
+    #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
+    # Do this first, b/c if not possible, the rest of the code is useless
+    if config('HEROKU', cast=bool):
+        wrapfunc = exc_logger.wrap('critical', timeout=timeout)(Repo.clone_from)
+        wrapfunc(config('SEE19GITURL', '/app/see19repo/'))
 
     # Loop through update functions and log any errors 
     for func in update_funcs:
@@ -63,5 +63,9 @@ def auto_update():
         baseframe = make_baseframe(save=True)
         note = ''
         update_readme(note)
-        git_push()
-        log_email(logfile)
+
+        if not test:
+            print ('push to git')
+            git_push()
+            print ('send log email')
+            log_email(logfile)

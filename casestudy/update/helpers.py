@@ -23,7 +23,7 @@ def update_readme(note=''):
     """
     Updates README.ipynb then converts to markdown
     """
-    if config('HEROKU'):
+    if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
     else:
         SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
@@ -62,7 +62,7 @@ def update_readme(note=''):
     )
 
 def git_push(style='dataset'):
-    if config('HEROKU'):
+    if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
         repo = Repo(config('ROOTPATH') + 'see19repo/')
     else:
