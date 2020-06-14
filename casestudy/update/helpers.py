@@ -2,7 +2,6 @@ from datetime import datetime as dt
 import numpy as np
 import pandas as pd
 
-import signal
 import functools
 import logging
 
@@ -134,9 +133,6 @@ def log_email(filename, critical=False):
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
 
-class TimeoutError(Exception):
-    pass
-
 class ExceptionLogger:
     """
     Class for setting up attributes of log state, creating log file and adding logs
@@ -151,22 +147,17 @@ class ExceptionLogger:
     
         logging.basicConfig(filename=logfile, filemode='w', level=logging.ERROR)
     
-    def wrap(self, level='exception', timeout=60):
+    def wrap(self, level='exception'):
         """
         Decorator for catching and logging exceptions for whatever function is called
         Applied using traditional syntax of func = exc_wrap(level)(func)
-        Signal added to end the function after 60 seconds
         """
         assert level in ['exception', 'critical']
-        
-        def decorator(func):
-            def _handle_timeout(signum, frame):
-                raise TimeoutError(func.__name__  + ' Timed Out')
-            
+
+        def decorator(func):                
             @functools.wraps(func)
             def log_exception(*args, **kwargs):
-                signal.signal(signal.SIGALRM, _handle_timeout)
-                signal.alarm(timeout)
+
                 try:
                     print ('Running {}...'.format(func.__name__))
                     result = func(*args, **kwargs)
@@ -177,8 +168,6 @@ class ExceptionLogger:
                         logging.exception(func.__name__ + str(e))
                     elif level == 'critical':
                         logging.critical(func.__name__ + str(e))
-                finally:
-                    signal.alarm(0)
             return log_exception
         return decorator
 

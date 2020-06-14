@@ -49,6 +49,7 @@ BRAZREGIONS = {
 }
 
 def get_italy(create=False):
+    print ('yessir')
     df = pd.read_csv(ITALY_URL)
     df_casi = df[df.casi_testati.notnull()]
     tamponi_per_testati = df_casi.tamponi.sum() / df_casi.casi_testati.sum()
@@ -64,15 +65,17 @@ def get_italy(create=False):
         deaths.append(Deaths(date=date, deaths=row['deceduti'], region=region))
         tests.append(Tests(date=date, tests=row['adj_testati'], region=region))
     
+    print ('erhe')
     if create:
         with transaction.atomic():
+            print ('yo')
             Deaths.objects.filter(region__country_key__alpha3='ITA').delete()
             Cases.objects.filter(region__country_key__alpha3='ITA').delete()
             Tests.objects.filter(region__country_key__alpha3='ITA').delete()
             max_bulk_create(cases)
             max_bulk_create(deaths)
             max_bulk_create(tests)
-
+        print ('what/????')
 def get_braz(create=False):
     df = pd.read_csv(BRAZIL_URL, parse_dates=['date'])
     df = df[df.state != 'TOTAL']
