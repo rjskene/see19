@@ -1,7 +1,7 @@
 from datetime import datetime as dt
 
 from decouple import config
-from .see19 import CaseStudy
+from .see19.see19 import CaseStudy
 
 from .helpers import *
 
