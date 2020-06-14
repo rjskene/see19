@@ -467,6 +467,7 @@ def update_amobi(create=False, headless=True):
 
     mobi_objs = []
     for region_name, df_g in df.groupby('region'):
+        print (region_name, 'in the loop')
         region = Region.objects.get(name=region_name) if not region_name == 'Georgia' else Region.objects.get(name=region_name, country_key__alpha3='USA')
         for col in df.columns[6:]:
             date = dt.strptime(col, '%Y-%m-%d')
