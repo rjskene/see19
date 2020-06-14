@@ -3,6 +3,7 @@ from datetime import datetime as dt
 import numpy as np
 import pandas as pd
 
+import gc
 from decouple import config
 
 from django.db.models import F
@@ -79,6 +80,13 @@ def make(save=False, test=False):
     reg_maxdates = {region_id: df_group.date.max() for region_id, df_group in df_base.groupby('region_id')}
     coun_maxdates = {country_id: df_group.date.max() for country_id, df_group in df_base.groupby('country_id')}
 
+    # Pause of for Garbage Collection
+    del df_deaths
+    del df_cases
+    del df_tests
+    gc.collect()
+    df_deaths=df_cases=df_tests=pd.DataFrame()
+
     # Make Polluts DF
     print ('adding pollutants')
     polluts = Pollutant.objects.filter(city__region__in=regions, date__lte=maxdate).values('date', 'city__name', 'city__region__id', 'city__region__name', 'pollutant', 'median')
@@ -93,12 +101,18 @@ def make(save=False, test=False):
         df_group['region_id'] = region_id
         dfs_polluts.append(df_group)
     df_polluts = pd.concat(dfs_polluts)
-
+    
     dfs_polluts = [df_group[df_group.date <= reg_maxdates[region_id]] for region_id, df_group in df_polluts.groupby('region_id')]
     df_polluts = pd.concat(dfs_polluts)
 
     # Merge Pollutants
     df_base = pd.merge(df_base, df_polluts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+
+    del df_polluts
+    del dfs_polluts
+    gc.collect()
+    df_polluts=pd.DataFrame()
+    dfs_polluts = []
 
     # GET MSMTS
     print ('adding measurements')
@@ -114,7 +128,11 @@ def make(save=False, test=False):
 
     # Merge Deaths and Msmts
     df_base = pd.merge(df_base, df_msmts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-
+    
+    del df_msmts
+    gc.collect()
+    df_msmts=pd.DataFrame()
+    
     # Backfill time-static info
     print ('backfill time-static data')
     fill_cols = [col for col in BASE_COLS if col not in COUNT_TYPES]
@@ -136,6 +154,10 @@ def make(save=False, test=False):
 
     df_base = pd.merge(df_base, df_strindex, how='inner', on=['date', 'country_id']).sort_values(by=['region_id', 'date'])
 
+    del df_strindex
+    gc.collect()
+    df_strindex=pd.DataFrame()
+
     # Merge in Google Mobility Index
     print ('adding Google Mobility')
     gmobi_fields = [f.name for f in Mobility._meta.get_fields() if f.name != 'id']
@@ -144,6 +166,10 @@ def make(save=False, test=False):
     df_gmobi = pd.concat(dfs_gmobi)
 
     df_base = pd.merge(df_base, df_gmobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+
+    del df_gmobi
+    gc.collect()
+    df_gmobi=pd.DataFrame()
 
     # Merge in in Apple Mobility Index
     print ('adding Apple Mobility')
@@ -157,6 +183,10 @@ def make(save=False, test=False):
     df_amobi = pd.concat(dfs_amobi)
 
     df_base = pd.merge(df_base, df_amobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+
+    del df_amobi
+    gc.collect()
+    df_amobi=pd.DataFrame()
 
     # Merge in Cause of Death factors
     print ('adding Causes of Death')
@@ -180,12 +210,20 @@ def make(save=False, test=False):
     df_base_coun = pd.merge(df_base_coun, df_cause_coun, how='left', on=['country_id'])
 
     df_base = pd.concat([df_base_reg, df_base_coun]).sort_values(by=['region_id', 'date'])
-
+    
+    del [[df_base_reg, df_base_coun]]
+    gc.collect()
+    df_base_reg=pd.DataFrame()
+    df_base_coun=pd.DataFrame()
 
     # Merge in travel popularity
     print ('adding Travel popularity')
     df_travel = pd.DataFrame(Travel.objects.filter(region__in=regions).annotate(travel_year=F('year')).values('region_id', 'travel_year', 'visitors'))
     df_base = pd.merge(df_base, df_travel, how='left', on=['region_id']).sort_values(by=['region_id', 'date'])
+
+    del df_travel
+    gc.collect()
+    df_travel=pd.DataFrame()
 
     # Merge in GDP data
     print ('adding GDP')
@@ -195,6 +233,10 @@ def make(save=False, test=False):
 
     df_base.date = pd.to_datetime(df_base.date).dt.tz_localize(None)
     
+    del df_gdp
+    gc.collect()
+    df_gdp=pd.DataFrame()
+
     if save:
         print ('saving...')
         file_date = dt.now().strftime('%Y-%m-%d-%H-%M-%S')
