@@ -12,11 +12,12 @@ sched = BlockingScheduler()
 def update_job():
     auto_update()
 
-@sched.scheduled_job('interval', mintues=5)
+@sched.scheduled_job('interval', minutes=5)
 def update_job():
-    auto_update()
+    print ('every 5 minutues')
+    # auto_update()
 
 @sched.scheduled_job('interval', seconds=10)
 def timed_job():
-    print('This job is run every three minutes.')
+    print('This job is run every 10 seconds.')
     test_func()
