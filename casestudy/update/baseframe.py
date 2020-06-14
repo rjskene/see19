@@ -25,6 +25,11 @@ def calc_rhum(temp, dewpoint):
     return 100 * (top / bottom)
 
 def make_baseframe(save=False, test=False):
+    if config('HEROKU'):
+        SEE19PATH = config('ROOTPATH') + 'see19repo/'
+    else:
+        SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
+
     print ('initializing')
     print ('adding fatalities')
     # Make Deaths DF
@@ -193,10 +198,10 @@ def make_baseframe(save=False, test=False):
     if save:
         print ('saving...')
         file_date = dt.now().strftime('%Y-%m-%d-%H-%M-%S')
-        filename = config('SEE19PATH') + '/dataset/see19-{}.csv'.format(file_date)
+        filename = SEE19PATH + 'dataset/see19-{}.csv'.format(file_date)
         df_base.to_csv(filename, index=False)
 
-        filename = config('SEE19PATH') + '/latest_dataset.txt' 
+        filename = SEE19PATH + 'latest_dataset.txt' 
         with open(filename, 'w') as filetowrite:
             filetowrite.write(file_date)
 
@@ -206,10 +211,10 @@ def make_baseframe(save=False, test=False):
         if save:
             print ('saving testset')
             file_date = dt.now().strftime('%Y-%m-%d-%H-%M-%S')
-            filename = config('SEE19PATH') + '/testset/see19-TEST-{}.csv'.format(file_date)
+            filename = SEE19PATH + 'testset/see19-TEST-{}.csv'.format(file_date)
             df_base.to_csv(filename, index=False)
 
-            filename = config('SEE19PATH') + '/latest_testset.txt' 
+            filename = SEE19PATH + 'latest_testset.txt' 
             with open(filename, 'w') as filetowrite:
                 filetowrite.write(file_date)
 

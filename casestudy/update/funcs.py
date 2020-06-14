@@ -484,7 +484,7 @@ def update_amobi(create=False, headless=True):
 
 def update_msmts(create=False):
 
-    MSMT_PATH = config('MSMTPATH')
+    MSMT_PATH = config('ROOTPATH') + 'casestudy/update/data/msmts/'
     last_date = Measurements.objects.latest('date').date
     next_date = last_date + timedelta(1) 
     year = next_date.strftime('%Y')

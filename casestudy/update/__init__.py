@@ -1,16 +1,24 @@
 from datetime import datetime as dt
 
+from git import Repo
 from decouple import config
-from ..see19.see19 import CaseStudy
+from see19 import CaseStudy
 
 from .helpers import *
+from .baseframe import make_baseframe
 
 def auto_update():
     from .baseframe import make_baseframe
     from .funcs import update_funcs
     from .helpers import test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, log_email, git_push, update_readme, ExceptionLogger
 
-    LOG_PATH = config('LOGPATH')
+    #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
+    # Do this first, b/c if not possible, the rest of the code is useless
+    if config('HEROKU'):
+        wrapfunc = exc_logger.wrap('critical', timeout=timeout)(Repo.clone_from)
+        wrapfunc(config('SEE19GITURL', '/app/see19repo'))
+
+    LOG_PATH = config('ROOTPATH') + 'casestudy/update/update_logs/'
     filename = 'update-{}.log'.format(dt.now().strftime('%Y-%m-%d'))
     logfile = LOG_PATH + filename
 

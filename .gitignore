@@ -149,3 +149,7 @@ migrations/
 .gitattributes
 datadump2.json
 README.ipynb
+
+# In production, these files need only be considered during runtime. For repo purposes, they can be ignored.
+*.nc
+*.png

@@ -23,8 +23,13 @@ def update_readme(note=''):
     """
     Updates README.ipynb then converts to markdown
     """
-    README_FILE = config('SEE19PATH') + 'README.ipynb'
-    README_NAME = config('SEE19PATH') + 'README'
+    if config('HEROKU'):
+        SEE19PATH = config('ROOTPATH') + 'see19repo/'
+    else:
+        SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
+    
+    README_FILE = SEE19PATH + 'README.ipynb'
+    README_NAME = SEE19PATH + 'README'
 
     nb = nbf.read(README_FILE, as_version=4)
     update_date = dt.now().strftime('%B %d, %Y')
@@ -57,16 +62,22 @@ def update_readme(note=''):
     )
 
 def git_push(style='dataset'):
-    repo = Repo(config('ROOTPATH'))
+    if config('HEROKU'):
+        SEE19PATH = config('ROOTPATH') + 'see19repo/'
+        repo = Repo(config('ROOTPATH') + 'see19repo/')
+    else:
+        SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
+        repo = Repo(config('ROOTPATH'))
+        
     assert style in ['dataset', 'testset', 'rm_only']
     
-    adds = [config('SEE19PATH') + item for item in ['dataset/', 'latest_dataset.txt', 'README.md']]
+    adds = [SEE19PATH + item for item in ['dataset/', 'latest_dataset.txt', 'README.md']]
     m = 'update dataset'
     if style == 'testset':
-        adds += [config('SEE19PATH') + item for item in ['testset', 'latest_testset.txt']]
+        adds += [SEE19PATH + item for item in ['testset', 'latest_testset.txt']]
         m += ' and testset'
     elif style == 'rm_only':
-        adds = config('SEE19PATH') + 'README.md'
+        adds = SEE19PATH + 'README.md'
         m = 'update README'
     
     if style in ['dataset', 'testset']:
@@ -74,7 +85,12 @@ def git_push(style='dataset'):
 
     repo.git.add(*adds)
     repo.git.commit(m=m)
-    repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')
+
+    # if on HEROKU, the see19 repo IS the master
+    # if local, see19 is the subtree
+    if not config('HEROKU'):
+        repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')
+    
     repo.remote(name='origin').push()
 
 def log_email(filename, critical=False):

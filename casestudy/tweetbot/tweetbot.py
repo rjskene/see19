@@ -18,7 +18,7 @@ class TweetBot:
     ACCESS_TOKEN = config('ACCESS_TOKEN')
     ACCESS_SECRET = config('ACCESS_SECRET')
 
-    CHARTPATH = config('CHARTPATH')
+    CHARTPATH = config('ROOTPATH') + 'casestudy/tweetbot/charts/'
 
     def __init__(self, test=False, wait=True, save_file=True, twitter_height_for_bokeh=325, twitter_height_for_matplotlib=3):
         self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
@@ -67,7 +67,7 @@ class TweetBot:
         
     def count_comparison(self, casestudy, count_type, regions):
         title = 'Comparing New {} as of {}'.format(count_type.title() if count_type == 'cases' else 'Fatalities', self.day)
-        filename = self.CHARTPATH + title + '.png'
+        filename = self.CHARTPATH + title + ' {}.png'.format(' '.join(regions))
         kwargs ={    
             'title': title,
             'regions': regions,
@@ -89,7 +89,6 @@ class TweetBot:
             'save_file': self.save_file,
             'filename': filename,
         }
-
         if 'Japan' in regions and count_type != 'deaths':
             kwargs['legend_location'] = 'top_center'
         
@@ -100,7 +99,7 @@ class TweetBot:
     
     def amobi_comparison(self, casestudy, regions):
         title = 'Apple Driving Queries as of {}'.format(self.day)
-        filename = '/Users/spindicate/Documents/docs/covid19/charts/{} as of {}.png'.format(title, self.day)
+        filename = self.CHARTPATH + title + ' {}.png'.format(' '.join(regions))
 
         kwargs ={    
             'title': title,
@@ -245,6 +244,7 @@ class TweetBot:
     def positivity_race(self, casestudy):
         us_regions = casestudy.df[casestudy.df.country_code == 'USA'].sort_values(by='cases', ascending=False).region_name.unique().tolist()[:20]
         us_regions = [reg for reg in us_regions if reg != 'Georgia']
+        
         filename = self.CHARTPATH + 'Positivity Ratio in US States.png'
         kwargs = {
             'regions': us_regions,
