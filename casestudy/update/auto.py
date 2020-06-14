@@ -26,7 +26,7 @@ def auto_update(test=False):
     # Do this first, b/c if not possible, the rest of the code is useless
     if config('HEROKU', cast=bool):
         wrapfunc = exc_logger.wrap('critical')(Repo.clone_from)
-        wrapfunc(config('SEE19GITURL', '/app/see19repo/'))
+        wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
         print ('cloned repo')
     
     # Loop through update functions and log any errors 

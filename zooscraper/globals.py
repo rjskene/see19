@@ -20,6 +20,7 @@ class ChromeInstantiator():
         if self.headless:
             # Instantiate the remote WebDriver
             self.options = Options()
+            self.options.add_argument('--no-sandbox')
             self.options.set_headless(headless=True)
             self.options.binary_location = config('GOOGLE_CHROME_BIN')
         else:
