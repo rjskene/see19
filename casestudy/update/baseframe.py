@@ -24,7 +24,7 @@ def calc_rhum(temp, dewpoint):
 
     return 100 * (top / bottom)
 
-def make_baseframe(save=False, test=False):
+def make(save=False, test=False):
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
     else:

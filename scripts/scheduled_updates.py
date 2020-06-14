@@ -1,5 +1,4 @@
-from casestudy.update import scheduler
+from .scheduler import sched
 
 def run():
-    scheduler.sched.start()
-    
+    sched.start()

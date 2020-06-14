@@ -7,11 +7,11 @@ from see19 import CaseStudy
 def test_func():
     print ('this is a test_func')
 
-def auto_update(test=False):
+def auto(test=False):
     from .funcs import update_funcs
     from .helpers import test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, log_email, git_push, update_readme, ExceptionLogger
 
-    from .baseframe import make_baseframe
+    from .baseframe import make
 
     print ('this is live!')
     LOG_PATH = config('ROOTPATH') + 'casestudy/update/update_logs/'
@@ -37,8 +37,7 @@ def auto_update(test=False):
 
     ### Test ###
     print ('making baseframe')
-    print (make_baseframe.__name__)
-    make_baseframe = exc_logger.wrap('critical')(make_baseframe)
+    make_baseframe = exc_logger.wrap('critical')(make)
     baseframe = make_baseframe()
     
     test_region_consistency = exc_logger.wrap('critical')(test_region_consistency)
@@ -67,7 +66,7 @@ def auto_update(test=False):
     if 'CRITICAL' in log_text:
         log_email(logfile, critical=True)
     else:
-        baseframe = make_baseframe(save=True)
+        baseframe = make(save=True)
         note = ''
         update_readme(note)
 

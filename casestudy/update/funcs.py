@@ -48,7 +48,7 @@ BRAZREGIONS = {
     'GO': 'Goias', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso Do Sul', 'DF': 'Distrito Federal',
 }
 
-def get_italy(create=False):
+def italy(create=False):
     df = pd.read_csv(ITALY_URL)
     df_casi = df[df.casi_testati.notnull()]
     tamponi_per_testati = df_casi.tamponi.sum() / df_casi.casi_testati.sum()
@@ -73,7 +73,7 @@ def get_italy(create=False):
             max_bulk_create(deaths)
             max_bulk_create(tests)
     
-def get_braz(create=False):
+def braz(create=False):
     df = pd.read_csv(BRAZIL_URL, parse_dates=['date'])
     df = df[df.state != 'TOTAL']
 
@@ -95,7 +95,7 @@ def get_braz(create=False):
             max_bulk_create(deaths)
             max_bulk_create(tests)
 
-def get_US(create=False):
+def US(create=False):
     EXCLUDED = ['USA (Aggregate Recovered)', 'Grand Princess', 'Wuhan Evacuee', 'Others (repatriated from Wuhan)',
        'Navajo Nation', 'Unknown location US', 'Federal Bureau of Prisons', 'Veteran Affair',
     ]
@@ -126,7 +126,7 @@ def get_US(create=False):
             max_bulk_create(cases)
             max_bulk_create(deaths)
 
-def create_rest(create=False):
+def rest(create=False):
     covreq = requests.get(REST_URL)
     strs = ['title="time_series_covid19_confirmed_global.csv"', 'title="time_series_covid19_deaths_global.csv"']
 
@@ -176,7 +176,7 @@ def create_rest(create=False):
                     model.objects.exclude(region__country_key__alpha3__in=['ITA', 'BRA', 'USA']).delete()
                     max_bulk_create(counts)
 
-def update_austests(create=False):
+def austests(create=False):
     d = requests.get(AUSTESTS_URL).json()
 
     df = pd.json_normalize(d['features'])
@@ -210,7 +210,7 @@ def update_austests(create=False):
             Tests.objects.filter(region__country_key__alpha3='AUS').delete()
             max_bulk_create(test_objs)
 
-def update_cadtests(create=False):
+def cadtests(create=False):
     df = pd.read_csv(CADTESTS_URL)
     df.date = pd.to_datetime(df.date, format='%d-%m-%Y')
     df = df[~df.prname.isin(['Repatriated travellers', 'Canada'])]
@@ -227,7 +227,7 @@ def update_cadtests(create=False):
             Tests.objects.filter(region__country_key__alpha3='CAN').delete()
             max_bulk_create(test_objs)
 
-def update_ustests(create=False):
+def ustests(create=False):
     df = pd.read_csv(USTESTS_URL, parse_dates=['date'])
     df = df.fillna(0).iloc[::-1]
 
@@ -243,7 +243,7 @@ def update_ustests(create=False):
             Tests.objects.filter(region__country_key__alpha3='USA').delete()
             max_bulk_create(test_objs)
         
-def update_resttests(create=False):
+def resttests(create=False):
     # Web Page location
     # 'https://data.humdata.org/dataset/total-covid-19-tests-performed-by-country'
     
@@ -269,7 +269,7 @@ def update_resttests(create=False):
             Tests.objects.exclude(region__country_key__alpha3__in=['AUS','CAD','USA', 'BRA', 'ITA']).delete()
             max_bulk_create(test_objs)
 
-def update_strindex(create=False):
+def strindex(create=False):
     df = pd.read_csv(OXCOV_URL, parse_dates=['Date'], infer_datetime_format=True)
 
     df = df[['CountryName', 'CountryCode', 'Date', 'C1_School closing',
@@ -309,7 +309,7 @@ def update_strindex(create=False):
             Strindex.objects.all().delete()
             max_bulk_create(strindex_objs)
 
-def update_gmobi(create=False):
+def gmobi(create=False):
     gmobi_req = requests.get(GMOBI_URL)
     string = 'Terms of Service'
     case_start = gmobi_req.text.find(string)
@@ -417,7 +417,7 @@ def update_gmobi(create=False):
             Mobility.objects.all().delete()
             max_bulk_create(mobi_objs)
 
-def update_amobi(create=False, headless=True):
+def amobi(create=False, headless=True):
     with ChromeInstantiator(headless=headless) as chrome:
         chrome.get(AMOBI_URL)
         time.sleep(3)
@@ -467,7 +467,6 @@ def update_amobi(create=False, headless=True):
 
     mobi_objs = []
     for region_name, df_g in df.groupby('region'):
-        print (region_name, 'in the loop')
         region = Region.objects.get(name=region_name) if not region_name == 'Georgia' else Region.objects.get(name=region_name, country_key__alpha3='USA')
         for col in df.columns[6:]:
             date = dt.strptime(col, '%Y-%m-%d')
@@ -483,8 +482,7 @@ def update_amobi(create=False, headless=True):
             AppleMobility.objects.all().delete()
             max_bulk_create(mobi_objs)
 
-def update_msmts(create=False):
-
+def msmts(create=False):
     MSMT_PATH = config('ROOTPATH') + 'casestudy/update/data/msmts/'
     last_date = Measurements.objects.latest('date').date
     next_date = last_date + timedelta(1) 
@@ -595,7 +593,7 @@ def update_msmts(create=False):
         shutil.move(MSMT_PATH + msmt_file, MSMT_PATH + 'failed/' + msmt_file)
         raise e
 
-def update_pollutants(create=False):
+def pollutants(create=False):
     # Download takes some time as it is a big file
     update_date = dt.now() - timedelta(10)
 
@@ -625,8 +623,8 @@ def update_pollutants(create=False):
             max_bulk_create(pollu_objs)
 
 update_funcs = [
-    get_italy, get_braz, get_US, create_rest, 
-    update_austests, update_cadtests, update_ustests, update_resttests,
-    update_strindex, update_gmobi, update_amobi, 
-    update_msmts, update_pollutants
+    italy, braz, US, rest, 
+    austests, cadtests, ustests, resttests,
+    strindex, gmobi, amobi, 
+    msmts, pollutants
 ]

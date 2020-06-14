@@ -1,1 +1,1 @@
-from .auto import auto_update
+from .auto import auto
