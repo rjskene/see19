@@ -26,10 +26,10 @@ def auto(test=False):
         wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
     
     # Loop through update functions and log any errors 
-    for func in update_funcs:
-        print ('Running {}'.format(func.__name__))
-        wrapfunc = exc_logger.wrap('exception')(func)
-        wrapfunc(create=True)
+    # for func in update_funcs:
+    #     print ('Running {}'.format(func.__name__))
+    #     wrapfunc = exc_logger.wrap('exception')(func)
+    #     wrapfunc(create=True)
 
     ### Test ###
     print ('making baseframe')

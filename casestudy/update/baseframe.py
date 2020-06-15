@@ -90,7 +90,7 @@ def make(save=False, test=False):
     df_polluts = pd.DataFrame(polluts)
     df_polluts = df_polluts.set_index(['city__region__id', 'pollutant', 'date']) \
         .sort_values(by=['city__region__id', 'pollutant', 'date'])
-    print ('yep')
+    
     dfs_polluts = []
     for region_id, df_group in df_polluts.groupby('city__region__id'):
         df_group = df_group.groupby(['pollutant', 'date'])['median'].mean().reset_index(level=['pollutant']).copy()
