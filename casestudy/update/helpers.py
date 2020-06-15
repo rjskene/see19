@@ -24,11 +24,12 @@ def update_readme(note=''):
     """
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
+        README_FILE =  config('ROOTPATH') + 'casestudy/see19/' + 'README.ipynb'
+        README_NAME = SEE19PATH + 'README'
     else:
         SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
-    
-    README_FILE = SEE19PATH + 'README.ipynb'
-    README_NAME = SEE19PATH + 'README'
+        README_FILE = SEE19PATH + 'README.ipynb'
+        README_NAME = SEE19PATH + 'README'
 
     nb = nbf.read(README_FILE, as_version=4)
     update_date = dt.now().strftime('%B %d, %Y')

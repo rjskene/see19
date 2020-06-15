@@ -106,10 +106,10 @@ def push(test=False):
         log_email(LOGS_PATH + filename, critical=True)
     else:
         #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
-        # if config('HEROKU', cast=bool):
-        print ('Cloning the see19 repo ...')
-        Repo.clone_from(config('SEE19GITURL'), config('ROOTPATH') + 'see19repo/')
-
+        if config('HEROKU', cast=bool):
+            print ('Cloning the see19 repo ...')
+            Repo.clone_from(config('SEE19GITURL'), config('ROOTPATH') + 'see19repo/')
+        
         print ('No critical errors. Saving baseframe to disk.')
         baseframe = make(save=True)
 
