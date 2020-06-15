@@ -596,14 +596,8 @@ def msmts(create=False):
 
 def pollutants(create=False):
     # Download takes some time as it is a big file
-    print ('hello?')
+    # Read in chunks to reduce memory impact
     update_date = dt.now() - timedelta(10)
-
-    # df = pd.read_csv(AQ_URL, delimiter=',', engine='python', comment='#', error_bad_lines=False)
-    # print (df.info(memory_usage='deep'))
-    # df = df[df['City'].isin(City.objects.values_list('name', flat=True))]
-    # df['date_as_ts'] = pd.to_datetime(df['Date'])
-    # df = df[df['date_as_ts'] >= update_date]
     
     chunksize = 50000
     reader = pd.read_csv(
@@ -620,7 +614,6 @@ def pollutants(create=False):
 
     df = pd.concat(dfs)
     
-    print ('ehre???')
     pollu_objs = []
     no_city = []
     for i, row in df.iterrows():
@@ -635,9 +628,6 @@ def pollutants(create=False):
         except:
             no_city.append(row['City'])
     
-    del df
-    gc.collect()
-    print ('make it here?')
     if create:
         with transaction.atomic():
             Pollutant.objects.filter(date__gte=update_date).delete()

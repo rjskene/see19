@@ -1,13 +1,8 @@
 from datetime import datetime as dt
 
-import gc
-
 from git import Repo
 from decouple import config
 from see19 import CaseStudy
-
-def test_func():
-    print ('this is a test_func')
 
 def auto(test=False):
     from .funcs import update_funcs
@@ -31,19 +26,8 @@ def auto(test=False):
     
     # Loop through update functions and log any errors 
     for func in update_funcs:
-        print ('udpating ' + func.__name__)
         wrapfunc = exc_logger.wrap('exception')(func)
         wrapfunc(create=True)
-        # func(create=True)
-        from pympler import muppy, summary
-        all_objects = muppy.get_objects()
-        sum1 = summary.summarize(all_objects)
-        # Prints out a summary of the large objects
-        summary.print_(sum1)
-        # lists = [ao for ao in all_objects if isinstance(ao, list)]
-        # print (lists)
-        del all_objects
-        gc.collect()
 
     ### Test ###
     print ('making baseframe')
