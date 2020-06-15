@@ -21,11 +21,13 @@ def auto(test=False):
     #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
     # Do this first, b/c if not possible, the rest of the code is useless
     if config('HEROKU', cast=bool):
+        print ('Cloning the see19 repo ...')
         wrapfunc = exc_logger.wrap('critical')(Repo.clone_from)
         wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
     
     # Loop through update functions and log any errors 
     for func in update_funcs:
+        print ('Running {}'.format(func.__name__))
         wrapfunc = exc_logger.wrap('exception')(func)
         wrapfunc(create=True)
 
