@@ -64,7 +64,8 @@ def git_push(style='dataset'):
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
         repo = Repo(config('ROOTPATH') + 'see19repo/')
-        repo.config_writer().set_value('user', 'email', config('GITHUBEMAIL')).release()
+        os.system("git config --global user.name \"Ryan Skene\"")
+        os.system("git config --global user.email \"rjskene83@gmail.com\"")
     else:
         SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
         repo = Repo(config('ROOTPATH'))
