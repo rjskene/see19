@@ -35,13 +35,15 @@ def auto(test=False):
         wrapfunc = exc_logger.wrap('exception')(func)
         wrapfunc(create=True)
         # func(create=True)
-        # from pympler import muppy, summary
-        # all_objects = muppy.get_objects()
-        # sum1 = summary.summarize(all_objects)
+        from pympler import muppy, summary
+        all_objects = muppy.get_objects()
+        sum1 = summary.summarize(all_objects)
         # Prints out a summary of the large objects
-        # summary.print_(sum1)
+        summary.print_(sum1)
         # lists = [ao for ao in all_objects if isinstance(ao, list)]
         # print (lists)
+        del all_objects
+        gc.collect()
 
     ### Test ###
     print ('making baseframe')
