@@ -32,9 +32,9 @@ def auto(test=False):
     # Loop through update functions and log any errors 
     for func in update_funcs:
         print ('udpating ' + func.__name__)
-        # wrapfunc = exc_logger.wrap('exception')(func)
-        # wrapfunc(create=True)
-        func(create=True)
+        wrapfunc = exc_logger.wrap('exception')(func)
+        wrapfunc(create=True)
+        # func(create=True)
         from pympler import muppy, summary
         all_objects = muppy.get_objects()
         sum1 = summary.summarize(all_objects)
