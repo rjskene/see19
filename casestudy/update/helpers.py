@@ -102,43 +102,75 @@ def log_email(filename=None, critical=False):
     else:
         subject = '{} Update Log for see19'.format(dt.now().strftime('%B %d, %Y'))
     
-    sender_email = 'covidchart@gmail.com'
-    receiver_email = 'covidchart@gmail.com'
-    password = config('EMAIL_PWORD')
+    # using SendGrid's Python Library
+    # https://github.com/sendgrid/sendgrid-python
+    import os
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail
 
-    # Create a multipart message and set headers
-    message = MIMEMultipart()
-    message['From'] = sender_email
-    message['To'] = receiver_email
-    message['Subject'] = subject
+    message = Mail(
+        from_email='rjskene83@gmail.com',
+        to_emails='covidchart@gmail.com',
+        subject=subject,)
 
-    if filename:
-        # Open PDF file in binary mode
+    if filename:    
         with open(filename, 'rb') as attachment:
-            # Add file as application/octet-stream
-            # Email client can usually download this automatically as attachment
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(attachment.read())
+            encoded_file = base64.b64encode(data).decode()
 
-        # Encode file in ASCII characters to send by email    
-        encoders.encode_base64(part)
-
-    # Add header as key/value pair to attachment part
-        part.add_header(
-            'Content-Disposition',
-            f'attachment; filename= {filename}',
+        attachedFile = Attachment(
+            FileContent(),
+            FileName(filename),
+            FileType('application/pdf'),
+            Disposition('attachment')
         )
+        message.attachment = attachedFile
 
-        # Add attachment to message and convert message to string
-        message.attach(part)
+    try:
+        sg = SendGridAPIClient(config('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
+
+    # sender_email = 'covidchart@gmail.com'
+    # receiver_email = 'covidchart@gmail.com'
+    # password = config('EMAIL_PWORD')
+
+    # # Create a multipart message and set headers
+    # message = MIMEMultipart()
+    # message['From'] = sender_email
+    # message['To'] = receiver_email
+    # message['Subject'] = subject
+
+    # if filename:
+    #     # Open PDF file in binary mode
+    #     with open(filename, 'rb') as attachment:
+    #         # Add file as application/octet-stream
+    #         # Email client can usually download this automatically as attachment
+    #         part = MIMEBase('application', 'octet-stream')
+    #         part.set_payload(attachment.read())
+
+    #     # Encode file in ASCII characters to send by email    
+    #     encoders.encode_base64(part)
+
+    # # Add header as key/value pair to attachment part
+    #     part.add_header(
+    #         'Content-Disposition',
+    #         f'attachment; filename= {filename}',
+    #     )
+
+    #     # Add attachment to message and convert message to string
+    #     message.attach(part)
     
-    text = message.as_string()
+    # text = message.as_string()
 
-    # Log in to server using secure context and send email
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, text)
+    # # Log in to server using secure context and send email
+    # context = ssl.create_default_context()
+    # with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+    #     server.login(sender_email, password)
+    #     server.sendmail(sender_email, receiver_email, text)
 
 class ExceptionLogger:
     """
