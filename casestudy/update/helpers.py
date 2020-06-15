@@ -117,7 +117,9 @@ def log_email(filename=None, critical=False):
     message = Mail(
         from_email='rjskene83@gmail.com',
         to_emails='covidchart@gmail.com',
-        subject=subject,)
+        subject=subject,
+        html_content='<strong>and easy to do anywhere, even with Python</strong>'
+    )
 
     if filename:    
         with open(filename, 'rb') as a:
@@ -125,7 +127,7 @@ def log_email(filename=None, critical=False):
             encoded_file = base64.b64encode(data).decode()
 
         attachedFile = Attachment(
-            FileContent(),
+            FileContent(encoded_file),
             FileName(filename),
             FileType('application/pdf'),
             Disposition('attachment')
@@ -139,7 +141,7 @@ def log_email(filename=None, critical=False):
         print(response.body)
         print(response.headers)
     except Exception as e:
-        print(e.message)
+        print(e.to_dict)
 
     # sender_email = 'covidchart@gmail.com'
     # receiver_email = 'covidchart@gmail.com'

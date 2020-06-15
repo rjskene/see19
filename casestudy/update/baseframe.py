@@ -98,12 +98,10 @@ def make(save=False, test=False):
         df_group['region_id'] = region_id
         dfs_polluts.append(df_group)
     df_polluts = pd.concat(dfs_polluts)
-    print ('here????????')
     dfs_polluts = [df_group[df_group.date <= reg_maxdates[region_id]] for region_id, df_group in df_polluts.groupby('region_id')]
     df_polluts = pd.concat(dfs_polluts)
 
     # Merge Pollutants
-    print ('here?')
     df_base = pd.merge(df_base, df_polluts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
     
     del [[df_polluts, polluts, dfs_polluts]]
