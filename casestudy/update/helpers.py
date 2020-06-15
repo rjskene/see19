@@ -96,7 +96,7 @@ def git_push(style='dataset'):
     
     repo.remote(name='origin').push()
 
-def log_email(filename, critical=False):
+def log_email(filename=None, critical=False):
     if critical:
         subject = 'CRITICAL ERROR'
     else:
@@ -112,24 +112,26 @@ def log_email(filename, critical=False):
     message['To'] = receiver_email
     message['Subject'] = subject
 
-    # Open PDF file in binary mode
-    with open(filename, 'rb') as attachment:
-        # Add file as application/octet-stream
-        # Email client can usually download this automatically as attachment
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(attachment.read())
+    if filename:
+        # Open PDF file in binary mode
+        with open(filename, 'rb') as attachment:
+            # Add file as application/octet-stream
+            # Email client can usually download this automatically as attachment
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment.read())
 
-    # Encode file in ASCII characters to send by email    
-    encoders.encode_base64(part)
+        # Encode file in ASCII characters to send by email    
+        encoders.encode_base64(part)
 
     # Add header as key/value pair to attachment part
-    part.add_header(
-        'Content-Disposition',
-        f'attachment; filename= {filename}',
-    )
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {filename}',
+        )
 
-    # Add attachment to message and convert message to string
-    message.attach(part)
+        # Add attachment to message and convert message to string
+        message.attach(part)
+    
     text = message.as_string()
 
     # Log in to server using secure context and send email
