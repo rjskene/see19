@@ -100,14 +100,15 @@ def push(test=False):
     with open(LOGS_PATH + filename, 'r') as f:
         log_text = f.read()
     
-    if 'CRITICAL' in log_text:
+    # if 'CRITICAL' in log_text:
+    if False:
         print ('There were critical errors. Dataset will not be updated.')
         log_email(LOGS_PATH + filename, critical=True)
     else:
         #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
-        if config('HEROKU', cast=bool):
-            print ('Cloning the see19 repo ...')
-            Repo.clone_from(config('SEE19GITURL'), '/app/see19repo/')
+        # if config('HEROKU', cast=bool):
+        print ('Cloning the see19 repo ...')
+        Repo.clone_from(config('SEE19GITURL'), config('ROOTPATH') + 'see19repo/')
 
         print ('No critical errors. Saving baseframe to disk.')
         baseframe = make(save=True)
