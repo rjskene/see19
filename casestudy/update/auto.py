@@ -1,37 +1,61 @@
 from datetime import datetime as dt
 
+import gc
 from git import Repo
 from decouple import config
 from see19 import CaseStudy
 
-def auto(test=False):
+LOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/'
+MODELLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/models/'
+TESTLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/tests/'
+
+def merge_logs(filename):
+    """
+    Record critical error if model or test log is not found
+    """
+    try:
+        with open(MODELLOGS_PATH + filename, 'r') as f:
+            lines = f.readlines()
+    except:
+        lines = ['CRITICAL:root:CANNOT READ MODEL LOG']
+    try:
+        with open(TESTLOGS_PATH + filename, 'r') as f:
+            lines += f.readlines()
+    except:
+        lines += ['CRITICAL:root:CANNOT READ TEST LOG']
+
+    with open(LOGS_PATH + filename, 'w') as f:
+        f.writelines(lines)
+
+def pull(test=False):
     from .funcs import update_funcs
-    from .helpers import test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, log_email, git_push, update_readme, ExceptionLogger
-
-    from .baseframe import make
-
-    LOG_PATH = config('ROOTPATH') + 'casestudy/update/update_logs/'
-    filename = 'update-{}.log'.format(dt.now().strftime('%Y-%m-%d'))
-    logfile = LOG_PATH + filename
+    from .helpers import ExceptionLogger
 
     # Instantiate a new logger
     print ('Instantiate new exception logger')
+    today = dt.now().strftime('%Y-%m-%d')
+    filename = '{}.log'.format(today)
+    logfile = MODELLOGS_PATH + filename
+    exc_logger = ExceptionLogger(logfile)
+    
+    # Loop through the update functions and log any errors 
+    for func in update_funcs:
+        print ('Running {}'.format(func.__name__))
+        wrapfunc = exc_logger.wrap('exception')(func)
+        wrapfunc(create=True)
+
+def test(): 
+    from .helpers import ExceptionLogger, test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days
+    from .baseframe import make
+    """
+    """
+    # Instantiate a new logger
+    print ('Instantiate new exception logger')
+    today = dt.now().strftime('%Y-%m-%d')
+    filename = '{}.log'.format(today)
+    logfile = TESTLOGS_PATH + filename
     exc_logger = ExceptionLogger(logfile)
 
-    #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
-    # Do this first, b/c if not possible, the rest of the code is useless
-    if config('HEROKU', cast=bool):
-        print ('Cloning the see19 repo ...')
-        wrapfunc = exc_logger.wrap('critical')(Repo.clone_from)
-        wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
-    
-    # Loop through update functions and log any errors 
-    # for func in update_funcs:
-    #     print ('Running {}'.format(func.__name__))
-    #     wrapfunc = exc_logger.wrap('exception')(func)
-    #     wrapfunc(create=True)
-
-    ### Test ###
     print ('making baseframe')
     make_baseframe = exc_logger.wrap('critical')(make)
     baseframe = make_baseframe()
@@ -61,16 +85,31 @@ def auto(test=False):
     print ('Test negative days')
     test_negative_days = exc_logger.wrap('exception')(test_negative_days)
     test_negative_days(casestudy)
-    
-    ### Send email and, If no critical errors, push to git 
-    print ('Reading logfile...')
-    with open(logfile, 'r') as f:
+
+def push(test=False):
+    from .baseframe import make
+    from .helpers import git_push, log_email, update_readme
+
+    ### Merge logs, check for critical errors, push to git, and email log
+    print ('Merge logs...')
+    today = dt.now().strftime('%Y-%m-%d')
+    filename = '{}.log'.format(today)
+    merge_logs(filename)
+
+    print ('Reading merge log file...')
+    with open(LOGS_PATH + filename, 'r') as f:
         log_text = f.read()
     
     if 'CRITICAL' in log_text:
         print ('There were critical errors. Dataset will not be updated.')
-        log_email(logfile, critical=True)
+        log_email(LOGS_PATH + filename, critical=True)
     else:
+        #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
+        if config('HEROKU', cast=bool):
+            print ('Cloning the see19 repo ...')
+            wrapfunc = exc_logger.wrap('critical')(Repo.clone_from)
+            wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
+
         print ('No critical errors. Saving baseframe to disk.')
         baseframe = make(save=True)
 
@@ -82,6 +121,6 @@ def auto(test=False):
             print ('push to git')
             git_push()
             print ('send log email')
-            log_email(logfile)
+            log_email(LOGS_PATH + filename)
 
     print ('UPDATE COMPLETE')

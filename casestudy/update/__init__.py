@@ -1,1 +1,1 @@
-from .auto import auto
+from .auto import pull, test, push
