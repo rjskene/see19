@@ -26,6 +26,7 @@ def calc_rhum(temp, dewpoint):
     return 100 * (top / bottom)
 
 def make(save=False, test=False):
+    import gc
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
     else:
@@ -68,6 +69,9 @@ def make(save=False, test=False):
     df_tests.date = df_tests.date.dt.normalize()
     df_base = pd.merge(df_base, df_tests, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
 
+    del [[df_cases, df_deaths, df_tests, deaths, cases, tests]]
+    gc.collect()
+
     # RE-ORDER COLUMNS
     df_base = df_base[BASE_COLS]
 
@@ -80,16 +84,8 @@ def make(save=False, test=False):
     reg_maxdates = {region_id: df_group.date.max() for region_id, df_group in df_base.groupby('region_id')}
     coun_maxdates = {country_id: df_group.date.max() for country_id, df_group in df_base.groupby('country_id')}
 
-    # Pause of for Garbage Collection
-    del df_deaths
-    del df_cases
-    del df_tests
-    gc.collect()
-    df_deaths=df_cases=df_tests=pd.DataFrame()
-
     # Make Polluts DF
     print ('adding pollutants')
-    print ('please')
     polluts = Pollutant.objects.filter(city__region__in=regions, date__lte=maxdate).values('date', 'city__name', 'city__region__id', 'city__region__name', 'pollutant', 'median')
     df_polluts = pd.DataFrame(polluts)
     df_polluts = df_polluts.set_index(['city__region__id', 'pollutant', 'date']) \
@@ -109,7 +105,10 @@ def make(save=False, test=False):
     # Merge Pollutants
     print ('here?')
     df_base = pd.merge(df_base, df_polluts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-
+    
+    del [[df_polluts, polluts, dfs_polluts]]
+    gc.collect()
+    
     # GET MSMTS
     print ('adding measurements')
     msmts = Measurements.objects.filter(region__in=regions, date__lte=maxdate).values('region_id', 'date', 'temp', 'dewpoint', 'uvb')
@@ -124,6 +123,8 @@ def make(save=False, test=False):
 
     # Merge Deaths and Msmts
     df_base = pd.merge(df_base, df_msmts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+    del [[df_msmts, msmts, dfs_msmts]]
+    gc.collect()
     
     # Backfill time-static info
     print ('backfill time-static data')
@@ -146,6 +147,9 @@ def make(save=False, test=False):
 
     df_base = pd.merge(df_base, df_strindex, how='inner', on=['date', 'country_id']).sort_values(by=['region_id', 'date'])
 
+    del [[df_strindex, dfs_strindex]]
+    gc.collect()
+
     # Merge in Google Mobility Index
     print ('adding Google Mobility')
     gmobi_fields = [f.name for f in Mobility._meta.get_fields() if f.name != 'id']
@@ -155,9 +159,8 @@ def make(save=False, test=False):
 
     df_base = pd.merge(df_base, df_gmobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
 
-    del df_gmobi
+    del [[df_gmobi, dfs_gmobi]]
     gc.collect()
-    df_gmobi=pd.DataFrame()
 
     # Merge in in Apple Mobility Index
     print ('adding Apple Mobility')
@@ -172,9 +175,8 @@ def make(save=False, test=False):
 
     df_base = pd.merge(df_base, df_amobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
 
-    del df_amobi
+    del [[df_amobi, amobis, dfs_amobi]]
     gc.collect()
-    df_amobi=pd.DataFrame()
 
     # Merge in Cause of Death factors
     print ('adding Causes of Death')
@@ -199,10 +201,8 @@ def make(save=False, test=False):
 
     df_base = pd.concat([df_base_reg, df_base_coun]).sort_values(by=['region_id', 'date'])
     
-    del [[df_base_reg, df_base_coun]]
+    del [[df_base_reg, df_base_coun, df_cause_coun]]
     gc.collect()
-    df_base_reg=pd.DataFrame()
-    df_base_coun=pd.DataFrame()
 
     # Merge in travel popularity
     print ('adding Travel popularity')
@@ -211,7 +211,6 @@ def make(save=False, test=False):
 
     del df_travel
     gc.collect()
-    df_travel=pd.DataFrame()
 
     # Merge in GDP data
     print ('adding GDP')
@@ -223,7 +222,6 @@ def make(save=False, test=False):
     
     del df_gdp
     gc.collect()
-    df_gdp=pd.DataFrame()
 
     if save:
         print ('saving...')
@@ -249,4 +247,15 @@ def make(save=False, test=False):
                 filetowrite.write(file_date)
 
     print ('COMPLETE')
+    # from pympler import muppy, summary
+    # all_objects = muppy.get_objects()
+    # sum1 = summary.summarize(all_objects)
+    # Prints out a summary of the large objects
+    # summary.print_(sum1)
+    # Get references to certain types of objects such as dataframe
+    # dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+    # for d in dataframes:
+    #     print (d.columns.values)
+    #     print (len(d))
+
     return df_base
