@@ -107,8 +107,7 @@ def push(test=False):
         #### IF ON HEROKU HAVE TO GIT CLONE THE REPO ###
         if config('HEROKU', cast=bool):
             print ('Cloning the see19 repo ...')
-            wrapfunc = exc_logger.wrap('critical')(Repo.clone_from)
-            wrapfunc(config('SEE19GITURL'), '/app/see19repo/')
+            Repo.clone_from(config('SEE19GITURL'), '/app/see19repo/')
 
         print ('No critical errors. Saving baseframe to disk.')
         baseframe = make(save=True)
