@@ -114,7 +114,8 @@ def log_email(filename=None, critical=False):
         subject=subject,)
 
     if filename:    
-        with open(filename, 'rb') as attachment:
+        with open(filename, 'rb') as a:
+            data = a.read()
             encoded_file = base64.b64encode(data).decode()
 
         attachedFile = Attachment(
