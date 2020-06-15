@@ -42,8 +42,6 @@ def auto(test=False):
         # summary.print_(sum1)
         # lists = [ao for ao in all_objects if isinstance(ao, list)]
         # print (lists)
-        del all_objects
-        gc.collect()
 
     ### Test ###
     print ('making baseframe')
