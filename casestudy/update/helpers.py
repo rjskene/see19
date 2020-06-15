@@ -97,9 +97,10 @@ def log_email(filename, critical=False):
         subject = 'CRITICAL ERROR'
     else:
         subject = '{} Update Log for see19'.format(dt.now().strftime('%B %d, %Y'))
-        sender_email = 'covidchart@gmail.com'
-        receiver_email = 'covidchart@gmail.com'
-        password = config('EMAIL_PWORD')
+    
+    sender_email = 'covidchart@gmail.com'
+    receiver_email = 'covidchart@gmail.com'
+    password = config('EMAIL_PWORD')
 
     # Create a multipart message and set headers
     message = MIMEMultipart()
