@@ -599,16 +599,31 @@ def pollutants(create=False):
     print ('hello?')
     update_date = dt.now() - timedelta(10)
 
-    df = pd.read_csv(AQ_URL, delimiter=',', engine='python', comment='#', error_bad_lines=False)
+    # df = pd.read_csv(AQ_URL, delimiter=',', engine='python', comment='#', error_bad_lines=False)
+    # print (df.info(memory_usage='deep'))
+    # df = df[df['City'].isin(City.objects.values_list('name', flat=True))]
+    # df['date_as_ts'] = pd.to_datetime(df['Date'])
+    # df = df[df['date_as_ts'] >= update_date]
+    
+    chunksize = 50000
+    reader = pd.read_csv(
+        AQ_URL, delimiter=',', engine='python', 
+        comment='#', error_bad_lines=False, 
+        chunksize=chunksize, iterator=True
+    )
+    dfs = []
+    for df_chunk in reader:
+        df_chunk = df_chunk[df_chunk['City'].isin(City.objects.values_list('name', flat=True))]
+        df_chunk['date_as_ts'] = pd.to_datetime(df_chunk['Date'])
+        df_chunk = df_chunk[df_chunk['date_as_ts'] >= update_date]
+        dfs.append(df_chunk)
 
-    df = df[df['City'].isin(City.objects.values_list('name', flat=True))]
-    df['date_as_ts'] = pd.to_datetime(df['Date'])
-    df = df[df['date_as_ts'] >= update_date]
+    df = pd.concat(dfs)
+    
     print ('ehre???')
     pollu_objs = []
     no_city = []
     for i, row in df.iterrows():
-        print ('now???')
         try:
             city = City.objects.get(name=row['City'], region__country_key__alpha2=row['Country'])
             pollu_objs.append(
