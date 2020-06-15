@@ -89,11 +89,12 @@ def make(save=False, test=False):
 
     # Make Polluts DF
     print ('adding pollutants')
+    print ('please')
     polluts = Pollutant.objects.filter(city__region__in=regions, date__lte=maxdate).values('date', 'city__name', 'city__region__id', 'city__region__name', 'pollutant', 'median')
     df_polluts = pd.DataFrame(polluts)
     df_polluts = df_polluts.set_index(['city__region__id', 'pollutant', 'date']) \
         .sort_values(by=['city__region__id', 'pollutant', 'date'])
-
+    print ('yep')
     dfs_polluts = []
     for region_id, df_group in df_polluts.groupby('city__region__id'):
         df_group = df_group.groupby(['pollutant', 'date'])['median'].mean().reset_index(level=['pollutant']).copy()
@@ -101,18 +102,13 @@ def make(save=False, test=False):
         df_group['region_id'] = region_id
         dfs_polluts.append(df_group)
     df_polluts = pd.concat(dfs_polluts)
-    
+    print ('here????????')
     dfs_polluts = [df_group[df_group.date <= reg_maxdates[region_id]] for region_id, df_group in df_polluts.groupby('region_id')]
     df_polluts = pd.concat(dfs_polluts)
 
     # Merge Pollutants
+    print ('here?')
     df_base = pd.merge(df_base, df_polluts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-
-    del df_polluts
-    del dfs_polluts
-    gc.collect()
-    df_polluts=pd.DataFrame()
-    dfs_polluts = []
 
     # GET MSMTS
     print ('adding measurements')
@@ -128,10 +124,6 @@ def make(save=False, test=False):
 
     # Merge Deaths and Msmts
     df_base = pd.merge(df_base, df_msmts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-    
-    del df_msmts
-    gc.collect()
-    df_msmts=pd.DataFrame()
     
     # Backfill time-static info
     print ('backfill time-static data')
@@ -153,10 +145,6 @@ def make(save=False, test=False):
     df_strindex = pd.concat(dfs_strindex)
 
     df_base = pd.merge(df_base, df_strindex, how='inner', on=['date', 'country_id']).sort_values(by=['region_id', 'date'])
-
-    del df_strindex
-    gc.collect()
-    df_strindex=pd.DataFrame()
 
     # Merge in Google Mobility Index
     print ('adding Google Mobility')
