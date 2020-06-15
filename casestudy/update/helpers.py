@@ -19,6 +19,12 @@ from nbconvert.writers import FilesWriter
 
 from decouple import config
 
+import base64
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, FileType, Disposition)
+
+
 def update_readme(note=''):
     """
     Updates README.ipynb then converts to markdown
