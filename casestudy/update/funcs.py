@@ -11,6 +11,7 @@ import urllib.request
 import shutil
 from zipfile import ZipFile
 import unidecode
+import gc
 
 from decouple import config
 import cdsapi
@@ -94,7 +95,7 @@ def braz(create=False):
             max_bulk_create(cases)
             max_bulk_create(deaths)
             max_bulk_create(tests)
-
+            
 def US(create=False):
     EXCLUDED = ['USA (Aggregate Recovered)', 'Grand Princess', 'Wuhan Evacuee', 'Others (repatriated from Wuhan)',
        'Navajo Nation', 'Unknown location US', 'Federal Bureau of Prisons', 'Veteran Affair',
@@ -617,6 +618,9 @@ def pollutants(create=False):
         except:
             no_city.append(row['City'])
     
+    del df
+    gc.collect()
+    print ('make it here?')
     if create:
         with transaction.atomic():
             Pollutant.objects.filter(date__gte=update_date).delete()

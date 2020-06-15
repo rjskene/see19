@@ -159,7 +159,6 @@ class ExceptionLogger:
             def log_exception(*args, **kwargs):
 
                 try:
-                    print ('Running {}...'.format(func.__name__))
                     result = func(*args, **kwargs)
                     return result
                 except Exception as e:

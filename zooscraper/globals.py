@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import gc
 
 from django.db import transaction
 
@@ -64,3 +65,5 @@ def max_bulk_create(objs):
         with transaction.atomic():
             for i in range(0, len(objs), BULK_SIZE):
                 model.objects.bulk_create(objs[i: i + BULK_SIZE])
+        del BULK_SIZE
+        gc.collect()
