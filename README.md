@@ -4,11 +4,8 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-<<<<<<< HEAD
-*Dataset Last Updated June 15, 2020*
-=======
 *Dataset Last Updated June 16, 2020*
->>>>>>> 35cbd1e8de391f0fbaf90b6bf21e0e50661a0478
+ *Note: US state-level data source for cases and fatalities has been eliminated. I am efforting a new source and expect to have more current data by June 17, 2020
        
 
 ***
