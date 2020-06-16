@@ -8,14 +8,14 @@ logging.basicConfig(filename='/tmp/log', level=logging.DEBUG)
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=23, minute=40, second=0)
+@sched.scheduled_job('cron', hour=11, minute=0, second=0)
 def pull_job():
     pull()
 
-@sched.scheduled_job('cron', hour=23, minute=50, second=0)
+@sched.scheduled_job('cron', hour=11, minute=15, second=0)
 def test_job():
     test()
 
-@sched.scheduled_job('cron', hour=23, minute=59, second=59)
+@sched.scheduled_job('cron', hour=11, minute=25, second=0)
 def push_job():
     push()
