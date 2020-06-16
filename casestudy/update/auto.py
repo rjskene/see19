@@ -50,7 +50,7 @@ def pull(test=False):
         wrapfunc(create=True)
 
 def test(): 
-    from .helpers import ExceptionLogger, test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days
+    from .helpers import ExceptionLogger, test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, test_data_is_timely
     from .baseframe import make
     """
     """
@@ -68,6 +68,10 @@ def test():
     print ('Region Consistency test')
     test_region_consistency = exc_logger.wrap('critical')(test_region_consistency)
     test_region_consistency(baseframe)
+
+    print ('Test data is timely for each region')
+    test_data_is_timely = exc_logger.wrap('exception')(test_data_is_timely)
+    test_data_is_timely(baseframe)
 
     for count_type in CaseStudy.COUNT_TYPES:
         print ('Not Na test for {}'.format(count_type))

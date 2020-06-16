@@ -33,7 +33,7 @@ US_URL = 'https://nssac.bii.virginia.edu/covid-19/dashboard/data/nssac-ncov-data
 REST_URL = 'https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases'
 AUSTESTS_URL = 'https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
 CADTESTS_URL = 'https://health-infobase.canada.ca/src/data/covidLive/covid19.csv'
-USTESTS_URL = 'https://covidtracking.com/api/v1/states/daily.csv'
+
 RESTTESTS_URL = 'https://covid.ourworldindata.org/data/owid-covid-data.xlsx'
 OXCOV_URL = 'https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv'
 GMOBI_URL = 'https://www.google.com/covid19/mobility/'
@@ -95,37 +95,31 @@ def braz(create=False):
             max_bulk_create(cases)
             max_bulk_create(deaths)
             max_bulk_create(tests)
-            
-def US(create=False):
-    EXCLUDED = ['USA (Aggregate Recovered)', 'Grand Princess', 'Wuhan Evacuee', 'Others (repatriated from Wuhan)',
-       'Navajo Nation', 'Unknown location US', 'Federal Bureau of Prisons', 'Veteran Affair',
-    ]
+
+
+def usa(create=False):
+    USA_URL = 'https://covidtracking.com/api/v1/states/daily.csv'
+    df = pd.read_csv(USA_URL, parse_dates=['date'])
+    df = df.fillna(0).iloc[::-1]
+
     cases = []
     deaths = []
+    tests = []
+    for i, row in df.iterrows():
+        if row.state != 'AS':
+            region = Region.objects.get(code=row.state, country_key__alpha3='USA')  
+            cases.append(Cases(region=region, date=row.date, cases=row.positive))
+            deaths.append(Deaths(region=region, date=row.date, deaths=row.death))
+            tests.append(Tests(region=region, date=row.date, tests=row.totalTestResults))
 
-    url = urllib.request.urlopen(US_URL)
-    with ZipFile(BytesIO(url.read())) as zf:
-        for contained_file in zf.namelist():
-            if 'csv' in contained_file:
-                df = pd.read_csv(zf.open(contained_file), error_bad_lines=False)
-                df = df[df['Region'] == 'USA']
-                df = df[~df['name'].isin(EXCLUDED)]
-                for i, row in df.iterrows():
-                    region_name = row['name'].strip()
-                    region, created = Region.objects.get_or_create(name=region_name, country_key=Country.objects.get(alpha3='USA'))
-
-                    if created:
-                        print ('new region created: ', region.name)
-                    date = pd.to_datetime('-'.join(contained_file.split('.')[0].split('-')[-3:]))
-                    cases.append(Cases(region=region, date=date, cases=row['Confirmed']))
-                    deaths.append(Deaths(region=region, date=date, deaths=row['Deaths']))
-    
     if create:
         with transaction.atomic():
-            Deaths.objects.filter(region__country_key__alpha3='USA').delete()
             Cases.objects.filter(region__country_key__alpha3='USA').delete()
-            max_bulk_create(cases)
-            max_bulk_create(deaths)
+            Deaths.objects.filter(region__country_key__alpha3='USA').delete()
+            Tests.objects.filter(region__country_key__alpha3='USA').delete()
+            Cases.objects.bulk_create(cases)
+            Deaths.objects.bulk_create(deaths)
+            Tests.objects.bulk_create(tests)
 
 def rest(create=False):
     covreq = requests.get(REST_URL)
@@ -226,22 +220,6 @@ def cadtests(create=False):
     if create:
         with transaction.atomic():
             Tests.objects.filter(region__country_key__alpha3='CAN').delete()
-            max_bulk_create(test_objs)
-
-def ustests(create=False):
-    df = pd.read_csv(USTESTS_URL, parse_dates=['date'])
-    df = df.fillna(0).iloc[::-1]
-
-    test_objs = []
-    for i, row in df.iterrows():
-        if row.state != 'AS':
-            region = Region.objects.get(code=row.state, country_key__alpha3='USA')
-            test_obj = Tests(**{'date': row.date, 'region': region, 'tests': row.totalTestResults})
-            test_objs.append(test_obj)
-
-    if create:
-        with transaction.atomic():
-            Tests.objects.filter(region__country_key__alpha3='USA').delete()
             max_bulk_create(test_objs)
         
 def resttests(create=False):
@@ -634,8 +612,8 @@ def pollutants(create=False):
             max_bulk_create(pollu_objs)
 
 update_funcs = [
-    italy, braz, US, rest, 
-    austests, cadtests, ustests, resttests,
+    italy, braz, usa, rest, 
+    austests, cadtests, resttests,
     strindex, gmobi, amobi, 
     msmts, pollutants
 ]

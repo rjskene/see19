@@ -231,6 +231,15 @@ def test_region_consistency(baseframe):
     except Exception as e:
         raise Exception(' ...Failing Regions: ' + str(unique[counts > 1])) from e
 
+def test_data_is_timely(baseframe):    
+    today = dt.now()
+    expired = [region_id for region_id, df_group in baseframe.groupby('region_id') if (today - df_group.date.max()).days > 3]
+    
+    try:
+        assert len(expired) == 0
+    except Exception as e:
+        raise Exception(' ...Failing Regions: {}'.format(' '.join(expired))) from e
+
 def test_notnas(baseframe, count_type):
     """
     Test that case/death/test data is not null for certain major regions excluding mainland China
