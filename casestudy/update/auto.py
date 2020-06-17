@@ -130,8 +130,6 @@ def push(test=False):
     print ('UPDATE COMPLETE')
 
 def auto():
-    print ('inside auto')
     pull()
     test()
     push()
-    print ('end auto')
