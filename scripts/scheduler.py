@@ -8,7 +8,7 @@ logging.basicConfig(filename='/tmp/log', level=logging.DEBUG)
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=18, minute=55, second=0)
+@sched.scheduled_job('cron', hour=21, minute=5, second=0)
 def pull_job():
     print ('begin job')
     auto()
