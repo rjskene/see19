@@ -10,9 +10,11 @@ MODELLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/models/'
 TESTLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/tests/'
 
 def auto():
+    print ('inside auto')
     pull()
     test()
     push()
+    print ('end auto')
 
 def merge_logs(filename):
     """
