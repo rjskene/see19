@@ -12,6 +12,10 @@ sched = BlockingScheduler()
 def pull_job():
     auto()
 
+@sched.scheduled_job('interval', seconds=5)
+def timed_job():
+    print('This job is run every 5 seconds.')
+
 # @sched.scheduled_job('cron', hour=11, minute=15, second=0)
 # def test_job():
 #     test()
