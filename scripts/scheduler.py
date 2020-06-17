@@ -1,14 +1,14 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 import logging
 
-from casestudy.update import pull, test, push
+from casestudy.update import auto, pull, test, push
 from casestudy.models import Region
 
 logging.basicConfig(filename='/tmp/log', level=logging.DEBUG)
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=21, minute=5, second=0)
+@sched.scheduled_job('cron', hour=21, minute=12, second=0)
 def pull_job():
     print ('begin job')
     auto()
