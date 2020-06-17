@@ -96,7 +96,6 @@ def braz(create=False):
             max_bulk_create(deaths)
             max_bulk_create(tests)
 
-
 def usa(create=False):
     USA_URL = 'https://covidtracking.com/api/v1/states/daily.csv'
     df = pd.read_csv(USA_URL, parse_dates=['date'])
