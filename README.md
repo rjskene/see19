@@ -4,9 +4,13 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated June 16, 2020*
- *Note: US state-level data source for cases and fatalities has been eliminated. I am efforting a new source and expect to have more current data by June 17, 2020
+*Dataset Last Updated June 17, 2020*
        
+
+***
+# June 17, 2020 Update 
+
+All US state-level data is now being compiled via [covidtracking.com](https://covidtracking.com/). Docs to be updated in due course.
 
 ***
 # May 31, 2020 Update 
@@ -192,5 +196,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](output_14_0.png)
+![png](output_15_0.png)
 
