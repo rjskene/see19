@@ -9,13 +9,6 @@ LOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/'
 MODELLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/models/'
 TESTLOGS_PATH = config('ROOTPATH') + 'casestudy/update/logs/tests/'
 
-def auto():
-    print ('inside auto')
-    pull()
-    test()
-    push()
-    print ('end auto')
-
 def merge_logs(filename):
     """
     Record critical error if model or test log is not found
@@ -135,3 +128,10 @@ def push(test=False):
             log_email(LOGS_PATH + filename)
 
     print ('UPDATE COMPLETE')
+
+def auto():
+    print ('inside auto')
+    pull()
+    test()
+    push()
+    print ('end auto')
