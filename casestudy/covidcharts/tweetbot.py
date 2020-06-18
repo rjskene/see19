@@ -23,7 +23,7 @@ class TweetBot:
 
     def __init__(self, live=False, wait=False, wait_time=15,
         save_file=True, 
-        twitter_height_for_bokeh=325, twitter_height_for_matplotlib=3):
+        twitter_height_for_bokeh=325, twitter_height_for_matplotlib=4):
         self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
         self.auth.set_access_token(self.ACCESS_TOKEN, self.ACCESS_SECRET)
         
@@ -49,9 +49,7 @@ class TweetBot:
 
         api = tweepy.API(self.auth)
         media_ids = []
-        print ('here???')
         for filename in self.filenames:
-            print (filename)
             res = api.media_upload(filename)
             media_ids.append(res.media_id)
 
@@ -59,9 +57,7 @@ class TweetBot:
         status += hashtags
 
         if self.tweet:
-            print ('yep')
             api.update_status(status=status, media_ids=media_ids, in_reply_to_status_id = tweetid , auto_populate_reply_metadata=True)
-            print ('ok')
         for filename in self.filenames:
             shutil.move(filename, self.CHARTPATH + 'old/' + filename.split(self.CHARTPATH)[1])
         
@@ -69,7 +65,6 @@ class TweetBot:
         self.filenames = []
         
         if self.wait:
-            print ('inside wait')
             time.sleep(60*wait_time)
             print ('Waiting {} mins'.format(str(wait_time)))
         
@@ -236,9 +231,10 @@ class TweetBot:
         title = 'Daily New Cases Per Test ({}DMA) in All US States as of {}'.format(casestudy.count_dma, self.day)
         filename = self.CHARTPATH + title + '.png'
         kwargs = {
-            'factors': factors, 'height': self.twitter_height_for_mpl, 'width': 16, 
+            'factors': factors, 'height': self.twitter_height_for_mpl, 'width': 12, 
             'colors': ['#D4AFB9', '#3D7068', '#529FD7'],
-            'title': title, 'y_title': .86, 'fs_title': 12, 'fs_yticks': 10, 'fs_xticks': 10,
+            'title': title, 'y_title': .86, 'fs_title': 12, 'fs_yticks': 10, 'fs_xticks': 8,
+            'dpi': 600,
             'subtitles': '',
             'sort_cols': factors,
             'as_of': self.cs_date,
@@ -263,14 +259,15 @@ class TweetBot:
             'marker': 's',
             'ms': 100,
             'comp_category': 'cases_new_dma_per_test_new_dma',
-            'width': 3, 
+            'width': 4, 
             'height': self.twitter_height_for_mpl,
             'fs_ylabel': 7,
             'fs_yticks': 7,
-            'pad_clabel': 8, 
+            'pad_clabel': 8,
             'fs_clabel': 8, 
             'xy_cbar': (.685, .24),
             'w_cbar': .4,
+            'dpi': 600,
             'h_cbar': 1.5,
             'save_file': self.save_file,
             'filename': filename,
@@ -288,8 +285,9 @@ class TweetBot:
             'marker': 's',
             'ms': 225,
             'comp_category': 'strindex',
-            'width': 5, 
-            'height': 4,
+            'width': 6, 
+            'height': self.twitter_height_for_mpl,
+            'dpi': 600,
             'fs_ylabel': 7, 
             'fs_yticks': 10,
             'pad_clabel': 8, 

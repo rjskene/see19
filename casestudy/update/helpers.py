@@ -195,8 +195,11 @@ class ExceptionLogger:
     
         logging.basicConfig(filename=logfile, filemode='w', level=logging.ERROR)
     
-    def wrap(self, level='exception'):
+    def wrap(self, _func=None, *, level='exception'):
         """
+        https://realpython.com/primer-on-python-decorators/#both-please-but-never-mind-the-bread
+        * argument means any arguments to the right cannot be called as positional, since _func may not be passed
+        
         Decorator for catching and logging exceptions for whatever function is called
         Applied using traditional syntax of func = exc_wrap(level)(func)
         """
@@ -205,7 +208,6 @@ class ExceptionLogger:
         def decorator(func):                
             @functools.wraps(func)
             def log_exception(*args, **kwargs):
-
                 try:
                     result = func(*args, **kwargs)
                     return result
@@ -216,8 +218,12 @@ class ExceptionLogger:
                     elif level == 'critical':
                         logging.critical(func.__name__ + str(e))
             return log_exception
-            
-        return decorator
+        
+        if _func is None:
+            return decorator
+        else:
+            return decorator(_func)
+        
 
 # TEST FUNCTIONS
 def test_region_consistency(baseframe):
