@@ -12,7 +12,7 @@ def tweetledee():
     print ('Getting See19 Baseframe')
     baseframe = get_baseframe()
     
-    test = config('TWEETBOT_LIVE')
+    live = config('TWEETBOT_LIVE', cast=bool)
     
     print ('Instantiate Exception Logger')
     filename = 'twitter-{}.log'.format(dt.now().strftime('%Y-%m-%d'))
@@ -55,7 +55,7 @@ def tweetledee():
 
     # instantiate TweetBot instance
     print ('Instantiate TweetBot')
-    tweetbot = TweetBot(test=test, wait=not test, wait_time=1)
+    tweetbot = TweetBot(live=live, wait=live, wait_time=1)
 
     ### CASE AND FATALITY COMPARISONS ###
     region_groups = [

@@ -21,17 +21,17 @@ class TweetBot:
 
     CHARTPATH = config('ROOTPATH') + 'casestudy/covidcharts/charts/'
 
-    def __init__(self, test=False, wait=True, wait_time=15,
+    def __init__(self, live=False, wait=False, wait_time=15,
         save_file=True, 
         twitter_height_for_bokeh=325, twitter_height_for_matplotlib=3):
         self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
         self.auth.set_access_token(self.ACCESS_TOKEN, self.ACCESS_SECRET)
         
-        self.test=test
-        self.tweet = not self.test
+        self.live=live
+        self.tweet = live
+        self.wait = wait
         self.wait_time = wait_time
         self.save_file = save_file
-        self.wait = self.tweet
         
         # Store the filenames in the tweet bot and wipe them after every net tweet
         self.filenames = []
@@ -49,17 +49,19 @@ class TweetBot:
 
         api = tweepy.API(self.auth)
         media_ids = []
-        
+        print ('here???')
         for filename in self.filenames:
-             res = api.media_upload(filename)
-             media_ids.append(res.media_id)
+            print (filename)
+            res = api.media_upload(filename)
+            media_ids.append(res.media_id)
 
         hashtags = ' #COVID19 #COVID #coronavirus #C19'
         status += hashtags
 
         if self.tweet:
+            print ('yep')
             api.update_status(status=status, media_ids=media_ids, in_reply_to_status_id = tweetid , auto_populate_reply_metadata=True)
-        
+            print ('ok')
         for filename in self.filenames:
             shutil.move(filename, self.CHARTPATH + 'old/' + filename.split(self.CHARTPATH)[1])
         
@@ -67,6 +69,7 @@ class TweetBot:
         self.filenames = []
         
         if self.wait:
+            print ('inside wait')
             time.sleep(60*wait_time)
             print ('Waiting {} mins'.format(str(wait_time)))
         

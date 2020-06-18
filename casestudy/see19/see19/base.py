@@ -45,7 +45,6 @@ def get_baseframe(test=False, filename=''):
 
     counter += 9
     progbar.clock(counter)
-
     lines_in_chunk = int(math.ceil(lines_number / (progbar.maxlen - counter)))
     chunks = pd.read_csv(df_url, chunksize=lines_in_chunk)
 
