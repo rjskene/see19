@@ -1,4 +1,5 @@
 from datetime import datetime as dt, timedelta
+import numpy as np
 import pandas as pd
 
 import time
@@ -18,14 +19,17 @@ class TweetBot:
     ACCESS_TOKEN = config('ACCESS_TOKEN')
     ACCESS_SECRET = config('ACCESS_SECRET')
 
-    CHARTPATH = config('ROOTPATH') + 'casestudy/tweetbot/charts/'
+    CHARTPATH = config('ROOTPATH') + 'casestudy/covidcharts/charts/'
 
-    def __init__(self, test=False, wait=True, save_file=True, twitter_height_for_bokeh=325, twitter_height_for_matplotlib=3):
+    def __init__(self, test=False, wait=True, wait_time=15,
+        save_file=True, 
+        twitter_height_for_bokeh=325, twitter_height_for_matplotlib=3):
         self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
         self.auth.set_access_token(self.ACCESS_TOKEN, self.ACCESS_SECRET)
         
         self.test=test
         self.tweet = not self.test
+        self.wait_time = wait_time
         self.save_file = save_file
         self.wait = self.tweet
         
@@ -33,13 +37,14 @@ class TweetBot:
         self.filenames = []
 
         self.now = dt.now()
-        self.cs_date = (dt(self.now.year, self.now.month, self.now.day) - timedelta(1))
+        self.cs_date = dt(self.now.year, self.now.month, self.now.day) - timedelta(1)
         self.day = (self.cs_date).strftime('%b %d')
         
         self.twitter_height_for_bokeh = twitter_height_for_bokeh
         self.twitter_height_for_mpl = twitter_height_for_matplotlib
         
-    def new_tweet(self, status, tweetid=None, wait_time=15):
+    def new_tweet(self, status, wait_time: int=None, tweetid: str=None):
+        wait_time = wait_time if wait_time else self.wait_time
         auto_populate_reply_metadata = True if tweetid else False
 
         api = tweepy.API(self.auth)
@@ -72,7 +77,7 @@ class TweetBot:
             'title': title,
             'regions': regions,
             'comp_category': '{}_new_dma_per_1M'.format(count_type),
-            'x_fontsize': 11, 
+            'x_fontsize': 11,
             'y_fontsize': 11,
             'fs_xticks': 8,
             'fs_yticks': 8,
@@ -193,9 +198,10 @@ class TweetBot:
 
         regions_str = 'Brazil' if key == 'BRA' else 'USA, CAD, AUS, Europe and Asia'
         start_date = end_date - timedelta(days=7)
+        
         stretch_date = end_date - timedelta(days=21)
         close_date = end_date - timedelta(days=3)
-
+        
         wave_types = {}
         wave_types['peak_wave'] = []
         wave_types['sustained_wave'] = []
@@ -256,7 +262,7 @@ class TweetBot:
             'comp_category': 'cases_new_dma_per_test_new_dma',
             'width': 3, 
             'height': self.twitter_height_for_mpl,
-            'fs_ylabel': 7, 
+            'fs_ylabel': 7,
             'fs_yticks': 7,
             'pad_clabel': 8, 
             'fs_clabel': 8, 
