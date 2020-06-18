@@ -10,4 +10,5 @@ sched = BlockingScheduler()
 
 @sched.scheduled_job('cron', hour=12, minute=30, second=0)
 def update_job():
+    print ('begin job')
     auto()

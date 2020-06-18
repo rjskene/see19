@@ -9,7 +9,7 @@ sched = BlockingScheduler(
         }
 )
 
-@sched.scheduled_job('cron', hour=5, minute=43, second=0)
+@sched.scheduled_job('cron', hour=5, minute=59, second=45)
 def tweet_job():
     tweetledee()
 
