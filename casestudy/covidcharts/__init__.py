@@ -184,6 +184,7 @@ def tweetledee():
     wrapped_tweet = exc_logger.wrap()(tweetbot.new_tweet)
     wrapped_tweet(status)
 
+    print ('All Tweets Complete!!!')
     if not test:
         print ('send log email')
         log_email(logfile)

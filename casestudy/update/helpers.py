@@ -216,6 +216,7 @@ class ExceptionLogger:
                     elif level == 'critical':
                         logging.critical(func.__name__ + str(e))
             return log_exception
+            
         return decorator
 
 # TEST FUNCTIONS
