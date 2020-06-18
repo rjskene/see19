@@ -1060,7 +1060,7 @@ class ScatterFlow(BaseChart):
         plt.subplots_adjust(left=.1, bottom=.1, right=1, top=1, wspace=0.2, hspace=0.22)
         
         if save_file:
-            plt.savefig(filename, bbox_inches='tight', dpi=1200)
+            plt.savefig(filename, bbox_inches='tight', dpi=dpi)
 
         return plt
 
