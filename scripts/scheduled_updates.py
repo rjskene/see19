@@ -9,7 +9,7 @@ logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=21, minute=0, second=0)
+@sched.scheduled_job('cron', hour=4, minute=13, second=0)
 def update_job():
     auto()
 
