@@ -186,7 +186,7 @@ MSMTS = ['uvb', 'rhum'] + TEMP_MSMTS
 
 ALL_FACTORS = GMOBIS + AMOBIS + CAUSES + STRINDEX_CATS + POLLUTS + MSMTS
 
-COUNT_TYPES = ['cases', 'deaths', 'tests']
+COUNT_TYPES = ['cases', 'deaths', 'tests', 'hospitalizations']
 COUNT_APPENDS = ['_dma', '_new', '_new_dma']
 BASECOUNT_CATS = [count_type + count_append for count_type in COUNT_TYPES for count_append in COUNT_APPENDS] + COUNT_TYPES
 
