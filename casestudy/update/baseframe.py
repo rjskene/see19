@@ -9,7 +9,7 @@ from decouple import config
 from django.db.models import F
 
 from casestudy.see19.see19.constants import ALL_RANGES, BASE_COLS, COUNT_TYPES, STRINDEX_SUBCATS, STRINDEX_CATS
-from casestudy.models import Region, Country, Cases, Deaths, Tests, Measurements, Pollutant, Strindex, \
+from casestudy.models import Region, Country, Cases, Deaths, Tests, Hospitalizations, Measurements, Pollutant, Strindex, \
     Mobility, Cause, Travel, GDP, AppleMobility
 
 def calc_rhum(temp, dewpoint):
@@ -65,7 +65,6 @@ def make(save=False, test=False):
     print ('adding tests')
     tests = Tests.objects.filter(region__in=regions).values('region_id', 'date', 'tests')
     df_tests = pd.DataFrame(tests)
-    # df_tests.date = pd.to_datetime(df_tests.date).dt.tz_localize(None)
     df_tests.date = df_tests.date.dt.normalize()
     df_base = pd.merge(df_base, df_tests, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
 
@@ -231,9 +230,16 @@ def make(save=False, test=False):
         with open(filename, 'w') as filetowrite:
             filetowrite.write(file_date)
 
-    if test and False:
+    if test:
         print ('adding test items')
-        # There Are Currently No Test Items; This section automatically set to falses
+        
+        # Make Hospitalizations DF and Merge
+        print ('adding hospitalizations')
+        hospi = Hospitalizations.objects.filter(region__in=regions).values('region_id', 'date', 'hospitalizations')
+        df_hospi = pd.DataFrame(hospi)
+        df_hospi.date = df_hospi.date.dt.normalize()
+        df_base = pd.merge(df_base, df_hospi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+        
         if save:
             print ('saving testset')
             file_date = dt.now().strftime('%Y-%m-%d-%H-%M-%S')

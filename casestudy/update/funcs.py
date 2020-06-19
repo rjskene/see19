@@ -24,32 +24,11 @@ from django.db import transaction
 from django.db.models import Q
 
 from zooscraper.globals import max_bulk_create, ChromeInstantiator
-from casestudy.models import Cases, Deaths, Tests, Region, Measurements, Pollutant, City, \
+from casestudy.models import Cases, Deaths, Tests, Hospitalizations, Region, Measurements, Pollutant, City, \
     Country, Strindex, Cause, Mobility, Travel, AppleMobility
 
-ITALY_URL = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv'
-BRAZIL_URL = 'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv'
-US_URL = 'https://nssac.bii.virginia.edu/covid-19/dashboard/data/nssac-ncov-data-country-state.zip'
-REST_URL = 'https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases'
-AUSTESTS_URL = 'https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
-CADTESTS_URL = 'https://health-infobase.canada.ca/src/data/covidLive/covid19.csv'
-
-RESTTESTS_URL = 'https://covid.ourworldindata.org/data/owid-covid-data.xlsx'
-OXCOV_URL = 'https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv'
-GMOBI_URL = 'https://www.google.com/covid19/mobility/'
-AMOBI_URL = 'https://www.apple.com/covid19/mobility/'
-AQ_URL = 'https://aqicn.org/data-platform/covid19/report/10248-8ad6289d/2020/waqi-covid19-airqualitydata-2020.csv'
-
-BRAZREGIONS = {
-    'RO': 'Rondonia', 'AC': 'Acre', 'AM': 'Amazonas', 'RR': 'Roraima', 'TO': 'Tocantins', 'PA': 'Para', 'AP': 'Amapa',
-    'MA': 'Maranhao', 'PI': 'Piaui', 'CE': 'Ceara', 'RN': 'Rio Grande Do Norte', 
-    'PB': 'Paraiba', 'PE': 'Pernambuco', 'AL': 'Alagoas', 'SE': 'Sergipe', 'BA': 'Bahia',
-    'ES': 'Espirito Santo', 'MG': 'Minas Gerais', 'RJ': 'Rio De Janeiro', 'SP': 'Sao Paulo',
-    'PR': 'Parana', 'SC': 'Santa Catarina', 'RS': 'Rio Grande Do Sul',
-    'GO': 'Goias', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso Do Sul', 'DF': 'Distrito Federal',
-}
-
 def italy(create=False):
+    ITALY_URL = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv'
     df = pd.read_csv(ITALY_URL)
     df_casi = df[df.casi_testati.notnull()]
     tamponi_per_testati = df_casi.tamponi.sum() / df_casi.casi_testati.sum()
@@ -58,23 +37,36 @@ def italy(create=False):
     cases = []
     deaths = []
     tests = []
+    hospitalizations = []
     for i, row in df.iterrows():
         date = pd.to_datetime(row['data'])
         region = Region.objects.get(name=row['denominazione_regione'])
         cases.append(Cases(date=date, cases=row['totale_casi'], region=region))
         deaths.append(Deaths(date=date, deaths=row['deceduti'], region=region))
         tests.append(Tests(date=date, tests=row['adj_testati'], region=region))
+        hospitalizations.append(Hospitalizations(date=date, hospitalizations=row['totale_ospedalizzati'], region=region))
     
     if create:
         with transaction.atomic():
             Deaths.objects.filter(region__country_key__alpha3='ITA').delete()
             Cases.objects.filter(region__country_key__alpha3='ITA').delete()
             Tests.objects.filter(region__country_key__alpha3='ITA').delete()
-            max_bulk_create(cases)
-            max_bulk_create(deaths)
-            max_bulk_create(tests)
+            Hospitalizations.objects.filter(region__country_key__alpha3='ITA').delete()
+            Cases.objects.bulk_create(cases)
+            Deaths.objects.bulk_create(deaths)
+            Hospitalizations.objects.bulk_create(hospitalizations)
     
-def braz(create=False):
+def brazil(create=False):
+    BRAZREGIONS = {
+        'RO': 'Rondonia', 'AC': 'Acre', 'AM': 'Amazonas', 'RR': 'Roraima', 'TO': 'Tocantins', 'PA': 'Para', 'AP': 'Amapa',
+        'MA': 'Maranhao', 'PI': 'Piaui', 'CE': 'Ceara', 'RN': 'Rio Grande Do Norte', 
+        'PB': 'Paraiba', 'PE': 'Pernambuco', 'AL': 'Alagoas', 'SE': 'Sergipe', 'BA': 'Bahia',
+        'ES': 'Espirito Santo', 'MG': 'Minas Gerais', 'RJ': 'Rio De Janeiro', 'SP': 'Sao Paulo',
+        'PR': 'Parana', 'SC': 'Santa Catarina', 'RS': 'Rio Grande Do Sul',
+        'GO': 'Goias', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso Do Sul', 'DF': 'Distrito Federal',
+    }
+
+    BRAZIL_URL = 'https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv'
     df = pd.read_csv(BRAZIL_URL, parse_dates=['date'])
     df = df[df.state != 'TOTAL']
 
@@ -104,6 +96,7 @@ def usa(create=False):
     cases = []
     deaths = []
     tests = []
+    hospitalizations = []
     for i, row in df.iterrows():
         if row.state != 'AS':
             region = Region.objects.get(code=row.state, country_key__alpha3='USA')  
@@ -111,16 +104,22 @@ def usa(create=False):
             deaths.append(Deaths(region=region, date=row.date, deaths=row.death))
             tests.append(Tests(region=region, date=row.date, tests=row.totalTestResults))
 
+            if not np.isnan(row.hospitalized):
+                hospitalizations.append(Hospitalizations(region=region, date=row.date, hospitalizations=row.hospitalized))
+
     if create:
         with transaction.atomic():
             Cases.objects.filter(region__country_key__alpha3='USA').delete()
             Deaths.objects.filter(region__country_key__alpha3='USA').delete()
             Tests.objects.filter(region__country_key__alpha3='USA').delete()
+            Hospitalizations.objects.filter(region__country_key__alpha3='USA').delete()
             Cases.objects.bulk_create(cases)
             Deaths.objects.bulk_create(deaths)
             Tests.objects.bulk_create(tests)
+            Hospitalizations.objects.bulk_create(hospitalizations)
 
 def rest(create=False):
+    REST_URL = 'https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases'
     covreq = requests.get(REST_URL)
     strs = ['title="time_series_covid19_confirmed_global.csv"', 'title="time_series_covid19_deaths_global.csv"']
 
@@ -171,6 +170,7 @@ def rest(create=False):
                     max_bulk_create(counts)
 
 def austests(create=False):
+    AUSTESTS_URL = 'https://services1.arcgis.com/vHnIGBHHqDR6y0CR/arcgis/rest/services/COVID19_Time_Series/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
     d = requests.get(AUSTESTS_URL).json()
 
     df = pd.json_normalize(d['features'])
@@ -205,6 +205,7 @@ def austests(create=False):
             max_bulk_create(test_objs)
 
 def cadtests(create=False):
+    CADTESTS_URL = 'https://health-infobase.canada.ca/src/data/covidLive/covid19.csv'
     df = pd.read_csv(CADTESTS_URL)
     df.date = pd.to_datetime(df.date, format='%d-%m-%Y')
     df = df[~df.prname.isin(['Repatriated travellers', 'Canada'])]
@@ -224,7 +225,7 @@ def cadtests(create=False):
 def resttests(create=False):
     # Web Page location
     # 'https://data.humdata.org/dataset/total-covid-19-tests-performed-by-country'
-    
+    RESTTESTS_URL = 'https://covid.ourworldindata.org/data/owid-covid-data.xlsx'
     regions_w_subs_w_tests = ['Australia', 'Canada', 'Italy', 'United States', 'Brazil']
     df = pd.read_excel(RESTTESTS_URL, parse_dates=['date'])
     df = df[~(df.location.isin(['International', 'World'] + regions_w_subs_w_tests))]
@@ -248,6 +249,7 @@ def resttests(create=False):
             max_bulk_create(test_objs)
 
 def strindex(create=False):
+    OXCOV_URL = 'https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv'
     df = pd.read_csv(OXCOV_URL, parse_dates=['Date'], infer_datetime_format=True)
 
     df = df[['CountryName', 'CountryCode', 'Date', 'C1_School closing',
@@ -288,6 +290,7 @@ def strindex(create=False):
             max_bulk_create(strindex_objs)
 
 def gmobi(create=False):
+    GMOBI_URL = 'https://www.google.com/covid19/mobility/'
     gmobi_req = requests.get(GMOBI_URL)
     string = 'Terms of Service'
     case_start = gmobi_req.text.find(string)
@@ -396,6 +399,7 @@ def gmobi(create=False):
             max_bulk_create(mobi_objs)
 
 def amobi(create=False, headless=True):
+    AMOBI_URL = 'https://www.apple.com/covid19/mobility/'
     with ChromeInstantiator(headless=headless) as chrome:
         chrome.get(AMOBI_URL)
         time.sleep(3)
@@ -574,6 +578,7 @@ def msmts(create=False):
 def pollutants(create=False):
     # Download takes some time as it is a big file
     # Read in chunks to reduce memory impact
+    AQ_URL = 'https://aqicn.org/data-platform/covid19/report/10248-8ad6289d/2020/waqi-covid19-airqualitydata-2020.csv'
     update_date = dt.now() - timedelta(10)
     
     chunksize = 50000
@@ -611,7 +616,7 @@ def pollutants(create=False):
             max_bulk_create(pollu_objs)
 
 update_funcs = [
-    italy, braz, usa, rest, 
+    italy, brazil, usa, rest, 
     austests, cadtests, resttests,
     strindex, gmobi, amobi, 
     msmts, pollutants

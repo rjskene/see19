@@ -33,6 +33,17 @@ class Tests(models.Model):
     def __str__(self):
         return '{} Tests as of '.format(self.region.name, self.date.strftime('%b %d'))
 
+class Hospitalizations(models.Model):
+    region = models.ForeignKey('Region', on_delete=models.PROTECT)
+    date = models.DateTimeField('Date')
+    hospitalizations = models.FloatField('Count', null=True)
+
+    class Meta:
+        unique_together = ['date', 'region']
+
+    def __str__(self):
+        return '{} Tests as of '.format(self.region.name, self.date.strftime('%b %d'))
+
 class Country(models.Model):
     name = models.CharField('Name', max_length=100)
     alt1 = models.CharField('Alternative Name 1', max_length=200, null=True)
