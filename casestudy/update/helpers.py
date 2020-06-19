@@ -39,7 +39,7 @@ def update_readme(note=''):
         README_NAME = SEE19PATH + 'README'
 
     nb = nbf.read(README_FILE, as_version=4)
-    update_date = dt.now().strftime('%B %d, %Y')
+    update_date = dt.now().strftime('%B %d, %Y %H:%M:%S')
     leadcell = {
         'cell_type': 'markdown',
        'metadata': {},
@@ -197,6 +197,9 @@ class ExceptionLogger:
     
     def wrap(self, _func=None, *, level='exception'):
         """
+        _func allows function to be passed directly or allows parameters to be passed, in which case
+        the function has be passed alongside
+
         https://realpython.com/primer-on-python-decorators/#both-please-but-never-mind-the-bread
         * argument means any arguments to the right cannot be called as positional, since _func may not be passed
         

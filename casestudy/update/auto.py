@@ -41,7 +41,7 @@ def pull(test=False):
     # Loop through the update functions and log any errors 
     for func in update_funcs:
         print ('Running {}'.format(func.__name__))
-        wrapfunc = exc_logger.wrap('exception')(func)
+        wrapfunc = exc_logger.wrap(level='exception')(func)
         wrapfunc(create=True)
 
 def test(): 
@@ -57,20 +57,20 @@ def test():
     exc_logger = ExceptionLogger(logfile)
 
     print ('making baseframe')
-    make_baseframe = exc_logger.wrap('critical')(make)
+    make_baseframe = exc_logger.wrap(level='critical')(make)
     baseframe = make_baseframe()
     
     print ('Region Consistency test')
-    test_region_consistency = exc_logger.wrap('critical')(test_region_consistency)
+    test_region_consistency = exc_logger.wrap(level='critical')(test_region_consistency)
     test_region_consistency(baseframe)
 
     print ('Test data is timely for each region')
-    test_data_is_timely = exc_logger.wrap('exception')(test_data_is_timely)
+    test_data_is_timely = exc_logger.wrap(level='exception')(test_data_is_timely)
     test_data_is_timely(baseframe)
 
     for count_type in CaseStudy.COUNT_TYPES:
         print ('Not Na test for {}'.format(count_type))
-        test_notnas = exc_logger.wrap('exception')(test_notnas)
+        test_notnas = exc_logger.wrap(level='exception')(test_notnas)
         test_notnas(baseframe, count_type)
 
     factors_with_dmas = ['strindex']
@@ -79,15 +79,15 @@ def test():
     
     print ('Casestudy tests...')
     print ('Test duplicate dates')
-    test_duplicate_dates = exc_logger.wrap('exception')(test_duplicate_dates)
+    test_duplicate_dates = exc_logger.wrap(level='exception')(test_duplicate_dates)
     test_duplicate_dates(casestudy)
     
     print ('Test duplicate days')
-    test_duplicate_days = exc_logger.wrap('exception')(test_duplicate_days)
+    test_duplicate_days = exc_logger.wrap(level='exception')(test_duplicate_days)
     test_duplicate_days(casestudy)
 
     print ('Test negative days')
-    test_negative_days = exc_logger.wrap('exception')(test_negative_days)
+    test_negative_days = exc_logger.wrap(level='exception')(test_negative_days)
     test_negative_days(casestudy)
 
 def push(test=False):
