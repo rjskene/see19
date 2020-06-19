@@ -4,8 +4,13 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated June 19, 2020 12:54:44*
+*Dataset Last Updated June 19, 2020 20:40:20*
        
+
+***
+# June 19, 2020 Update 
+
+Hospitalization data has been added for select states in the US and Italy. Data pulled from same sources as cases, fatality, and testing data.
 
 ***
 # June 17, 2020 Update 
@@ -196,5 +201,5 @@ p = casestudy.comp_chart4d.make(comp_category='deaths_new_dma_per_1M', **kwargs)
 ```
 
 
-![png](output_15_0.png)
+![png](output_16_0.png)
 
