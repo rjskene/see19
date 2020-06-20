@@ -144,7 +144,7 @@ cython_debug/
 # see19 files/folders to ignore
 fixtures/
 migrations/
-/notebooks/
+notebooks/
 
 # Root files/folders to ignore
 .gitattributes

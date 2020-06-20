@@ -24,7 +24,6 @@ import base64
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, FileType, Disposition)
 
-
 def update_readme(note=''):
     """
     Updates README.ipynb then converts to markdown
@@ -69,6 +68,8 @@ def update_readme(note=''):
     )
 
 def git_push(style='dataset'):
+    assert style in ['dataset', 'testset', 'testset_only', 'rm_only']
+
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
         repo = Repo(config('ROOTPATH') + 'see19repo/')
@@ -77,19 +78,20 @@ def git_push(style='dataset'):
     else:
         SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
         repo = Repo(config('ROOTPATH'))
-        
-    assert style in ['dataset', 'testset', 'rm_only']
-    
+            
     adds = [SEE19PATH + item for item in ['dataset/', 'latest_dataset.txt', 'README.md']]
     m = 'update dataset'
     if style == 'testset':
         adds += [SEE19PATH + item for item in ['testset', 'latest_testset.txt']]
         m += ' and testset'
+    elif style == 'testset_only':
+        adds = [SEE19PATH + item for item in ['testset', 'latest_testset.txt', 'README.md']]
+        m = 'update testset'
     elif style == 'rm_only':
-        adds = SEE19PATH + 'README.md'
+        adds = [SEE19PATH + 'README.md']
         m = 'update README'
     
-    if style in ['dataset', 'testset']:
+    if style in ['dataset', 'testset', 'testset_only']:
         m += ' {}'.format(dt.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     repo.git.add(*adds)
@@ -97,10 +99,10 @@ def git_push(style='dataset'):
 
     # if on HEROKU, the see19 repo IS the master
     # if local, see19 is the subtree
-    if not config('HEROKU'):
-        repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')
-    
     repo.remote(name='origin').push()
+
+    if not config('HEROKU'):
+        repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')    
 
 def log_email(filename=None, critical=False):
     if critical:
@@ -227,7 +229,6 @@ class ExceptionLogger:
         else:
             return decorator(_func)
         
-
 # TEST FUNCTIONS
 def test_region_consistency(baseframe):
     # TEST REGION IDS, NAMES, AND CODES ONLY APPEAR IN ONE GROUPING
@@ -243,7 +244,7 @@ def test_region_consistency(baseframe):
 
 def test_data_is_timely(baseframe):    
     today = dt.now()
-    expired = [region_id for region_id, df_group in baseframe.groupby('region_id') if (today - df_group.date.max()).days > 3]
+    expired = [str(region_id) for region_id, df_group in baseframe.groupby('region_id') if (today - df_group.date.max()).days > 3]
     
     try:
         assert len(expired) == 0
