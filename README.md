@@ -4,13 +4,13 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated June 19, 2020 20:50:08*
+*Dataset Last Updated June 20, 2020 12:56:59*
        
 
 ***
 # June 19, 2020 Update 
 
-**New Testset**: Hospitalization data has been added for select states in the US and Italy. Data pulled from same sources as cases, fatality, and testing data. The testset will be updated periodically until data is merged 
+Hospitalization data has been added for select states in the US and Italy. Data pulled from same sources as cases, fatality, and testing data.
 
 ***
 # June 17, 2020 Update 
