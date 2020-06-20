@@ -185,6 +185,5 @@ def tweetledee():
     wrapped_tweet(status)
 
     print ('All Tweets Complete!!!')
-    if not test:
-        print ('send log email')
-        log_email(logfile)
+    print ('send log email')
+    log_email(logfile)
