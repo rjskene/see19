@@ -197,7 +197,7 @@ class ExceptionLogger:
     
         logging.basicConfig(filename=logfile, filemode='w', level=logging.ERROR)
     
-    def wrap(self, _func=None, *, level='exception'):
+    def wrap(self, _func=None, *, level='exception', message=''):
         """
         _func allows function to be passed directly or allows parameters to be passed, in which case
         the function has be passed alongside
@@ -210,6 +210,8 @@ class ExceptionLogger:
         """
         assert level in ['exception', 'critical']
 
+        message = ' ' + message if message else message        
+
         def decorator(func):                
             @functools.wraps(func)
             def log_exception(*args, **kwargs):
@@ -219,9 +221,9 @@ class ExceptionLogger:
                 except Exception as e:
                     print (repr(e))
                     if level == 'exception':
-                        logging.exception(func.__name__ + str(e))
+                        logging.exception(func.__name__ + str(e) + message)
                     elif level == 'critical':
-                        logging.critical(func.__name__ + str(e))
+                        logging.critical(func.__name__ + str(e) + message)
             return log_exception
         
         if _func is None:
