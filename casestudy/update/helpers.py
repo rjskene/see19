@@ -102,6 +102,7 @@ def git_push(style='dataset'):
     repo.remote(name='origin').push()
 
     if not config('HEROKU'):
+        print ('here???')
         repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')    
 
 def log_email(filename=None, critical=False):

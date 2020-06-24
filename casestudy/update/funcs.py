@@ -54,6 +54,7 @@ def italy(create=False):
             Hospitalizations.objects.filter(region__country_key__alpha3='ITA').delete()
             Cases.objects.bulk_create(cases)
             Deaths.objects.bulk_create(deaths)
+            Tests.objects.bulk_create(tests)
             Hospitalizations.objects.bulk_create(hospitalizations)
     
 def brazil(create=False):
