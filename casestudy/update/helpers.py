@@ -101,8 +101,7 @@ def git_push(style='dataset'):
     # if local, see19 is the subtree
     repo.remote(name='origin').push()
 
-    if not config('HEROKU'):
-        print ('here???')
+    if not config('HEROKU', cast=bool):
         repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')    
 
 def log_email(filename=None, critical=False):
@@ -121,7 +120,7 @@ def log_email(filename=None, critical=False):
         from_email='rjskene83@gmail.com',
         to_emails='covidchart@gmail.com',
         subject=subject,
-        html_content='<strong>and easy to do anywhere, even with Python</strong>'
+        html_content='<strong>COVIDCHARTS</strong>'
     )
 
     if filename:    
@@ -222,9 +221,9 @@ class ExceptionLogger:
                 except Exception as e:
                     print (repr(e))
                     if level == 'exception':
-                        logging.exception(func.__name__ + str(e) + message)
+                        logging.exception(func.__name__ + ' ' + repr(e) + message)
                     elif level == 'critical':
-                        logging.critical(func.__name__ + str(e) + message)
+                        logging.critical(func.__name__ + ' ' + repr(e) + message)
             return log_exception
         
         if _func is None:
@@ -243,7 +242,7 @@ def test_region_consistency(baseframe):
     try:
         assert all(counts == 1)
     except Exception as e:
-        raise Exception(' ...Failing Regions: ' + str(unique[counts > 1])) from e
+        raise Exception('Region codes Inconsistent for: ' + str(unique[counts > 1])) from e
 
 def test_data_is_timely(baseframe):    
     today = dt.now()
@@ -252,7 +251,7 @@ def test_data_is_timely(baseframe):
     try:
         assert len(expired) == 0
     except Exception as e:
-        raise Exception(' ...Failing Regions: {}'.format(' '.join(expired))) from e
+        raise Exception('Counts Not Timely for Regions: {}'.format(' '.join(expired))) from e
 
 def test_notnas(baseframe, count_type):
     """
@@ -269,7 +268,7 @@ def test_notnas(baseframe, count_type):
         assert len(na_groups) == 0 
     except Exception as e:
         df_na = pd.concat(na_groups)
-        raise Exception(' ...Failing Regions: ' + str(df_na.region_id.unique())) from e
+        raise Exception('{} Nulls Found for Regions: '.format(count_type.capitalize()) + str(df_na.region_id.unique())) from e
     
 def test_duplicate_dates(casestudy):
     cols = ['region_id', 'date']
@@ -281,7 +280,7 @@ def test_duplicate_dates(casestudy):
     try:
         assert all(counts == 1)
     except Exception as e:
-        raise Exception(' ...Failing Regions: ' + str(df_days.region_id.unique())) from e
+        raise Exception('Duplicate Dates for Regions: ' + str(df_days.region_id.unique())) from e
 
 def test_duplicate_days(casestudy):
     cols = ['region_id', 'days']
@@ -294,7 +293,7 @@ def test_duplicate_days(casestudy):
         assert all(counts == 1)
     except Exception as e:
         dup = unique[counts > 1]
-        raise Exception(' ...Failing Regions: ' + ' '.join(dup)) from e
+        raise Exception('Duplicate Days for Regions: ' + ' '.join(dup)) from e
 
 def test_negative_days(casestudy):
     df_days = casestudy.df[casestudy.df.days.dt.days < 0]
@@ -303,4 +302,4 @@ def test_negative_days(casestudy):
         assert df_days.empty
     except Exception as e:
         regs_w_neg_days = df_days.region_id.unique().tolist()
-        raise Exception(' ...Failing Regions: ' + ' '.join(regs_w_neg_days)) from e
+        raise Exception('Negative Days for Regions: ' + ' '.join(regs_w_neg_days)) from e

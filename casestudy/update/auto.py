@@ -16,13 +16,13 @@ def merge_logs(filename):
     try:
         with open(MODELLOGS_PATH + filename, 'r') as f:
             lines = f.readlines()
-    except:
-        lines = ['CRITICAL:root:CANNOT READ MODEL LOG']
+    except Exception as e:
+        lines = ['CRITICAL:root:CANNOT READ MODEL LOG' + ' ' + repr(e)]
     try:
         with open(TESTLOGS_PATH + filename, 'r') as f:
             lines += f.readlines()
-    except:
-        lines += ['CRITICAL:root:CANNOT READ TEST LOG']
+    except Exception as e:
+        lines += ['\nCRITICAL:root:CANNOT READ TEST LOG' + ' ' + repr(e)]
 
     with open(LOGS_PATH + filename, 'w') as f:
         f.writelines(lines)
@@ -104,8 +104,7 @@ def push(test=False):
     with open(LOGS_PATH + filename, 'r') as f:
         log_text = f.read()
     
-    # if 'CRITICAL' in log_text:
-    if False:
+    if 'CRITICAL:' in log_text:
         print ('There were critical errors. Dataset will not be updated.')
         log_email(LOGS_PATH + filename, critical=True)
     else:
