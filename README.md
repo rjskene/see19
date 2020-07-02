@@ -4,7 +4,7 @@
            and analyzing Coronavirus Disease 2019 aka COVID19 
            aka C19**
 
-*Dataset Last Updated July 01, 2020 12:19:31*
+*Dataset Last Updated July 02, 2020 11:49:12*
        
 
 ***
