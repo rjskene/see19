@@ -60,6 +60,7 @@ def make(save=False, test=False):
     df_cases = pd.DataFrame(cases)
     df_cases['date'] = df_cases['date'].dt.normalize()
     df_base = pd.merge(df_deaths, df_cases, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
 
     # Make Tests DF and Merge
     print ('adding tests')
@@ -67,13 +68,14 @@ def make(save=False, test=False):
     df_tests = pd.DataFrame(tests)
     df_tests.date = df_tests.date.dt.normalize()
     df_base = pd.merge(df_base, df_tests, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
 
     del [[df_cases, df_deaths, df_tests, deaths, cases, tests]]
     gc.collect()
 
     # RE-ORDER COLUMNS
     df_base = df_base[BASE_COLS]
-
+    
     # Update regions for those in the baseframe
     regions = Region.objects.filter(id__in=df_base.region_id.unique())
     countries = Country.objects.filter(id__in=df_base.country_id.unique())
@@ -102,7 +104,7 @@ def make(save=False, test=False):
 
     # Merge Pollutants
     df_base = pd.merge(df_base, df_polluts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-    
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     del [[df_polluts, polluts, dfs_polluts]]
     gc.collect()
     
@@ -122,12 +124,12 @@ def make(save=False, test=False):
     df_base = pd.merge(df_base, df_msmts, how='outer', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
     del [[df_msmts, msmts, dfs_msmts]]
     gc.collect()
-    
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     # Backfill time-static info
     print ('backfill time-static data')
     fill_cols = [col for col in BASE_COLS if col not in COUNT_TYPES]
     df_base[fill_cols] = df_base[fill_cols].bfill(axis='rows')
-
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     # Merge in Oxford stringency index
     print ('adding strindex')
     strindex_fields = [f.name for f in Strindex._meta.get_fields() if f.name != 'id']
@@ -143,7 +145,7 @@ def make(save=False, test=False):
     df_strindex = pd.concat(dfs_strindex)
 
     df_base = pd.merge(df_base, df_strindex, how='inner', on=['date', 'country_id']).sort_values(by=['region_id', 'date'])
-
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     del [[df_strindex, dfs_strindex]]
     gc.collect()
 
@@ -155,7 +157,7 @@ def make(save=False, test=False):
     df_gmobi = pd.concat(dfs_gmobi)
 
     df_base = pd.merge(df_base, df_gmobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     del [[df_gmobi, dfs_gmobi]]
     gc.collect()
 
@@ -171,7 +173,7 @@ def make(save=False, test=False):
     df_amobi = pd.concat(dfs_amobi)
 
     df_base = pd.merge(df_base, df_amobi, how='left', on=['date', 'region_id']).sort_values(by=['region_id', 'date'])
-
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     del [[df_amobi, amobis, dfs_amobi]]
     gc.collect()
 
@@ -197,7 +199,7 @@ def make(save=False, test=False):
     df_base_coun = pd.merge(df_base_coun, df_cause_coun, how='left', on=['country_id'])
 
     df_base = pd.concat([df_base_reg, df_base_coun]).sort_values(by=['region_id', 'date'])
-    
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     del [[df_base_reg, df_base_coun, df_cause_coun]]
     gc.collect()
 
@@ -214,7 +216,7 @@ def make(save=False, test=False):
     df_gdp = pd.DataFrame(GDP.objects.filter(region__in=regions).annotate(gdp_year=F('year')).values('region_id', 'gdp_year', 'gdp'))
     df_base = pd.merge(df_base, df_gdp, how='left', on=['region_id']).sort_values(by=['region_name', 'date'])
     df_base.country_id = df_base.country_id.astype('int64')
-
+    print (df_base[(df_base.region_name == 'Ontario') & (df_base.date == dt(2020,6,11))])
     df_base.date = pd.to_datetime(df_base.date).dt.tz_localize(None)
     
     del df_gdp
