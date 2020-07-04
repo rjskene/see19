@@ -274,7 +274,7 @@ def test_duplicate_dates(casestudy):
     cols = ['region_id', 'date']
     df_test = casestudy.df[cols].copy(deep=True)
     df_test.date = pd.to_datetime(df_test.date).astype(np.int64)
-    regarr = np.array([row.iloc[0].values for i, row in df_test.groupby(cols)])
+    regarr = np.array([row.values for i, row in df_test.iterrows()])
     unique, counts = np.unique(regarr, axis=0, return_counts=True)
 
     try:
@@ -286,7 +286,7 @@ def test_duplicate_days(casestudy):
     cols = ['region_id', 'days']
     df_test = casestudy.df[cols].copy(deep=True)
     df_test.days = df_test.days.dt.days
-    regarr = np.array([row.iloc[0].values for i, row in df_test.groupby(cols)])
+    regarr = np.array([row.values for i, row in df_test.iterrows()])
     unique, counts = np.unique(regarr, axis=0, return_counts=True)    
 
     try:
