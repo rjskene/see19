@@ -280,7 +280,8 @@ def test_duplicate_dates(casestudy):
     try:
         assert all(counts == 1)
     except Exception as e:
-        raise Exception('Duplicate Dates for Regions: ' + str(df_days.region_id.unique())) from e
+        dup = unique[counts > 1]
+        raise Exception('Duplicate Dates for Regions: ' + str(dup[:, 0])) from e
 
 def test_duplicate_days(casestudy):
     cols = ['region_id', 'days']
