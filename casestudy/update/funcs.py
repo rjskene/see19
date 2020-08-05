@@ -364,7 +364,8 @@ def gmobi(create=False):
                 except Region.DoesNotExist:
                     print (region)
         else:
-            df_group = df_group[df_group.sub_region_1.isnull()]
+            coun_filt = (df_group.sub_region_1.isna() & df_group.sub_region_2.isna() & df_group.metro_area.isna())
+            df_group = df_group[coun_filt]
             df_group = df_group.fillna(0)
             country_name = df_group['country_region'].iloc[0]
 

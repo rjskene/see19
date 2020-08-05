@@ -195,8 +195,8 @@ class Mobility(models.Model):
     workplaces = models.FloatField('Work Places')
     residential = models.FloatField('Residential')
 
-    # class Meta:
-    #     unique_together = ['date', 'region']
+    class Meta:
+        unique_together = ['date', 'region']
 
 class Cause(models.Model):
     region = models.ForeignKey('Region', on_delete=models.PROTECT, null=True)

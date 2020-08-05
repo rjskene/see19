@@ -3,6 +3,7 @@ from datetime import datetime as dt
 import numpy as np
 import pandas as pd
 
+import warnings
 import functools
 import logging
 
@@ -230,8 +231,16 @@ class ExceptionLogger:
             return decorator
         else:
             return decorator(_func)
-        
+
 # TEST FUNCTIONS
+def test_region_nan(bf):
+    cols = ['region_id', 'region_code', 'region_name']
+    for col in cols:
+        try:
+            assert ~bf[col].isna().any()
+        except Exception as e:
+            warnings.warn('{} has NaNs'.format(col))
+
 def test_region_consistency(baseframe):
     # TEST REGION IDS, NAMES, AND CODES ONLY APPEAR IN ONE GROUPING
     
@@ -270,9 +279,9 @@ def test_notnas(baseframe, count_type):
         df_na = pd.concat(na_groups)
         raise Exception('{} Nulls Found for Regions: '.format(count_type.capitalize()) + str(df_na.region_id.unique())) from e
     
-def test_duplicate_dates(casestudy):
+def test_duplicate_dates(df):
     cols = ['region_id', 'date']
-    df_test = casestudy.df[cols].copy(deep=True)
+    df_test = df[cols].copy(deep=True)
     df_test.date = pd.to_datetime(df_test.date).astype(np.int64)
     regarr = np.array([row.values for i, row in df_test.iterrows()])
     unique, counts = np.unique(regarr, axis=0, return_counts=True)
@@ -283,9 +292,9 @@ def test_duplicate_dates(casestudy):
         dup = unique[counts > 1]
         raise Exception('Duplicate Dates for Regions: ' + str(dup[:, 0])) from e
 
-def test_duplicate_days(casestudy):
+def test_duplicate_days(df):
     cols = ['region_id', 'days']
-    df_test = casestudy.df[cols].copy(deep=True)
+    df_test = df[cols].copy(deep=True)
     df_test.days = df_test.days.dt.days
     regarr = np.array([row.values for i, row in df_test.iterrows()])
     unique, counts = np.unique(regarr, axis=0, return_counts=True)    
@@ -296,8 +305,8 @@ def test_duplicate_days(casestudy):
         dup = unique[counts > 1]
         raise Exception('Duplicate Days for Regions: ' + ' '.join(dup)) from e
 
-def test_negative_days(casestudy):
-    df_days = casestudy.df[casestudy.df.days.dt.days < 0]
+def test_negative_days(df):
+    df_days = df[df.days.dt.days < 0]
     
     try:
         assert df_days.empty

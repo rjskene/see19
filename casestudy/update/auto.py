@@ -46,7 +46,7 @@ def pull(test=False):
 
 def test(): 
     from .helpers import ExceptionLogger, test_region_consistency, test_notnas, test_duplicate_dates, test_duplicate_days, test_negative_days, test_data_is_timely
-    from .baseframe import make
+    from .baseframe import BaseMaker
     """
     """
     # Instantiate a new logger
@@ -55,11 +55,13 @@ def test():
     filename = '{}.log'.format(today)
     logfile = TESTLOGS_PATH + filename
     exc_logger = ExceptionLogger(logfile)
+    bm = BaseMaker()
 
     print ('making baseframe')
-    make_baseframe = exc_logger.wrap(level='critical')(make)
-    baseframe = make_baseframe()
-    
+    make_baseframe = exc_logger.wrap(level='critical')(bm.make)
+    make_baseframe()
+    baseframe = bm.bf
+
     print ('Region Consistency test')
     test_region_consistency = exc_logger.wrap(level='critical')(test_region_consistency)
     test_region_consistency(baseframe)
@@ -80,18 +82,18 @@ def test():
     print ('Casestudy tests...')
     print ('Test duplicate dates')
     test_duplicate_dates = exc_logger.wrap(level='exception')(test_duplicate_dates)
-    test_duplicate_dates(casestudy)
+    test_duplicate_dates(casestudy.df)
     
     print ('Test duplicate days')
     test_duplicate_days = exc_logger.wrap(level='exception')(test_duplicate_days)
-    test_duplicate_days(casestudy)
+    test_duplicate_days(casestudy.df)
 
     print ('Test negative days')
     test_negative_days = exc_logger.wrap(level='exception')(test_negative_days)
-    test_negative_days(casestudy)
+    test_negative_days(casestudy.df)
 
 def push(test=False):
-    from .baseframe import make
+    from .baseframe import BaseMaker
     from .helpers import git_push, log_email, update_readme
 
     ### Merge logs, check for critical errors, push to git, and email log
@@ -100,7 +102,7 @@ def push(test=False):
     filename = '{}.log'.format(today)
     merge_logs(filename)
 
-    print ('Reading merge log file...')
+    print ('Reading merged log file...')
     with open(LOGS_PATH + filename, 'r') as f:
         log_text = f.read()
     
@@ -114,7 +116,8 @@ def push(test=False):
             Repo.clone_from(config('SEE19GITURL'), config('ROOTPATH') + 'see19repo/')
         
         print ('No critical errors. Saving baseframe to disk.')
-        baseframe = make(save=True)
+        bm = BaseMaker(save=True)
+        baseframe = bm.make()
 
         print ('Updating readme')
         note = ''
