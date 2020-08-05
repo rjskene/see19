@@ -70,12 +70,12 @@ def update_readme(note=''):
 
 def git_push(style='dataset'):
     assert style in ['dataset', 'testset', 'testset_only', 'rm_only']
+    os.system("git config --global user.name \"Ryan Skene\"")
+    os.system("git config --global user.email \"rjskene83@gmail.com\"")
 
     if config('HEROKU', cast=bool):
         SEE19PATH = config('ROOTPATH') + 'see19repo/'
         repo = Repo(config('ROOTPATH') + 'see19repo/')
-        os.system("git config --global user.name \"Ryan Skene\"")
-        os.system("git config --global user.email \"rjskene83@gmail.com\"")
     else:
         SEE19PATH = config('ROOTPATH') + 'casestudy/see19/'
         repo = Repo(config('ROOTPATH'))
@@ -100,10 +100,13 @@ def git_push(style='dataset'):
 
     # if on HEROKU, the see19 repo IS the master
     # if local, see19 is the subtree
-    repo.remote(name='origin').push()
+    git_ssh_identity_file = os.path.expanduser('~/.ssh/id_rsa')
+    ssh_cmd = 'ssh -i {}'.format(git_ssh_identity_file)
+    with repo.git.custom_environment(GIT_SSH_COMMAND=ssh_cmd):
+        repo.remote(name='origin').push()
 
-    if not config('HEROKU', cast=bool):
-        repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')    
+        if not config('HEROKU', cast=bool):
+            repo.git.subtree('push', 'see19', 'master', prefix='casestudy/see19/')    
 
 def log_email(filename=None, critical=False):
     if critical:
